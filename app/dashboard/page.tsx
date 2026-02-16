@@ -39,29 +39,32 @@ export default function Dashboard() {
     releasedEarnings: 0.00
   });
 
-  // Profile data
-  const profile = {
-    buyer: {
-      name: 'Utkarsh Bhaiya',
-      email: userEmail || 'jgadjgjd@gmail.com',
-      phone: '+1 (555) 123-4567',
-      address: '123 Main Street, City, State 12345',
-      joinedDate: 'January 2024',
-      totalPurchases: 0,
-      rating: 0.0
-    },
-    seller: {
-      name: 'John Seller',
-      email: userEmail || 'john.seller@example.com',
-      phone: '+1 (555) 123-4567',
-      address: '123 Business Street, City, State 12345',
-      joinedDate: 'January 2024',
-      totalSales: 0,
-      rating: 0.0
-    }
-  };
+  type UserType = 'buyer' | 'seller';
 
-  const currentProfile = profile[userType];
+  type BuyerProfile = {
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+    joinedDate: string;
+    totalPurchases: number;
+    rating: number;
+  };
+  
+  type SellerProfile = {
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+    joinedDate: string;
+    totalSales: number;
+    rating: number;
+  };
+  
+  type ProfileType = {
+    buyer: BuyerProfile;
+    seller: SellerProfile;
+  };
 
   const handleSignOut = () => {
     if (typeof window !== 'undefined') {
@@ -92,7 +95,7 @@ export default function Dashboard() {
     });
   };
 
-  const handleSecurePayment = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSecurePayment = (e) => {
     e.preventDefault();
     console.log('New transaction:', newTransaction);
     // Handle payment logic here
