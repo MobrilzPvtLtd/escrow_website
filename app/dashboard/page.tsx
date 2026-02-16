@@ -85,7 +85,7 @@ export default function Dashboard() {
     });
   };
 
-  const handleTransactionChange = (field, value) => {
+  const handleTransactionChange = (field: keyof typeof newTransaction, value: string) => {
     setNewTransaction({
       ...newTransaction,
       [field]: value
