@@ -48,7 +48,7 @@ export default function ProfileScreen() {
     }
   ];
 
-  const handleNavigation = (href) => {
+  const handleNavigation = (href: string) => {
     router.push(href);
   };
 
