@@ -6,7 +6,7 @@ import { Bell, User, Send, ArrowLeft, Mail, Phone, MapPin, Package, DollarSign }
 
 export default function Dashboard() {
   const router = useRouter();
-  const [userType, setUserType] = useState('buyer');
+  const [userType, setUserType] = useState<'buyer' | 'seller'>('buyer');
   const [userEmail, setUserEmail] = useState('');
   const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' or 'profile'
   const [showNewPurchaseModal, setShowNewPurchaseModal] = useState(false);
@@ -21,10 +21,10 @@ export default function Dashboard() {
   // Load user type from localStorage on component mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const storedUserType = localStorage.getItem('userType');
+      const storedUserType = localStorage.getItem('userType') as 'buyer' | 'seller' | null;
       const storedEmail = localStorage.getItem('userEmail');
       
-      if (storedUserType) {
+      if (storedUserType && (storedUserType === 'buyer' || storedUserType === 'seller')) {
         setUserType(storedUserType);
       }
       if (storedEmail) {
