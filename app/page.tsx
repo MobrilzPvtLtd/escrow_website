@@ -14,7 +14,7 @@ export default function AuthScreen() {
     password: ''
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log('Form submitted:', { ...formData, accountType, type: isLogin ? 'login' : 'signup' });
     
@@ -28,7 +28,7 @@ export default function AuthScreen() {
     router.push('/dashboard');
   };
 
-  const handleChange = (name, value) => {
+  const handleChange = (name: keyof typeof formData, value: string) => {
     setFormData({
       ...formData,
       [name]: value
