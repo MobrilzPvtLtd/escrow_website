@@ -95,12 +95,12 @@ export default function Dashboard() {
     });
   };
 
-  const handleSecurePayment = (e) => {
+  const handleSecurePayment = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log('New transaction:', newTransaction);
-    // Handle payment logic here
     handleCloseModal();
   };
+  
 
   const handleToggleNotifications = () => {
     setShowNotifications(!showNotifications);
