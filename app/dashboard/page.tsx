@@ -174,8 +174,9 @@ export default function Dashboard() {
                   <div>
                     <p className="text-sm text-gray-500">{userType === 'buyer' ? 'Total Purchases' : 'Total Sales'}</p>
                     <p className="text-lg font-semibold text-gray-900">
-                      {userType === 'buyer' ? currentProfile.totalPurchases : currentProfile.totalSales}
-                    </p>
+                    {userType === 'buyer' 
+  ? (currentProfile as typeof profile.buyer).totalPurchases 
+  : (currentProfile as typeof profile.seller).totalSales}                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Rating</p>
