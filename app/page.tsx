@@ -1,205 +1,232 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { Shield, Lock, CreditCard, ChevronRight } from 'lucide-react';
 
 export default function AuthScreen() {
-  const [isLogin, setIsLogin] = useState(true);
   const router = useRouter();
+  const [isLogin, setIsLogin] = useState(true);
   const [accountType, setAccountType] = useState('buyer');
   const [formData, setFormData] = useState({
     fullName: '',
-    phone: '',
     email: '',
-    password: ''
+    password: '',
   });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleAuth = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', { ...formData, accountType, type: isLogin ? 'login' : 'signup' });
-    
-    // Store the account type in localStorage so dashboard can read it
     if (typeof window !== 'undefined') {
       localStorage.setItem('userType', accountType);
-      localStorage.setItem('userEmail', formData.email);
+      localStorage.setItem('userEmail', formData.email || 'user@example.com');
     }
-    
-    // Redirect to dashboard
     router.push('/dashboard');
   };
 
-  const handleChange = (name: keyof typeof formData, value: string) => {
-    setFormData({
-      ...formData,
-      [name]: value
-    });
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
-        {/* Logo and Header */}
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-32 h-32 bg-indigo-600 rounded-2xl flex items-center justify-center mb-6">
-            <svg
-              className="w-16 h-16 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-              />
-            </svg>
+    <div className="min-h-screen flex bg-white font-sans overflow-hidden">
+      {/* Left Side - Hero Section */}
+      <div className="hidden lg:flex lg:w-1/2 relative bg-slate-900 items-center justify-center overflow-hidden">
+        {/* Abstract Background Design */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute top-[-10%] left-[-10%] w-[70%] h-[70%] bg-white/5 rounded-full blur-[120px] animate-pulse" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-blue-500/10 rounded-full blur-[100px]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-[0.03] pointer-events-none"
+            style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
+        </div>
+
+        <div className="relative z-10 max-w-lg px-12 text-center lg:text-left">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8 backdrop-blur-sm">
+            <Shield className="w-4 h-4 text-blue-400" />
+            <span className="text-xs font-bold text-blue-100 uppercase tracking-widest">Enterprise Grade Security</span>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            SecureEscrow Platform
-          </h1>
-          <p className="text-gray-500 text-center">
-            Trusted intermediary for secure commercial exchanges
+
+          <div className="mb-12">
+            <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mb-6 overflow-hidden shadow-2xl border border-white/20">
+              <Image
+                src="/logo.jpg"
+                alt="SecurePay CH Logo"
+                width={80}
+                height={80}
+                className="object-contain"
+              />
+            </div>
+            <h1 className="text-6xl font-black text-white tracking-tight mb-6 leading-tight">
+              SecurePay <span className="text-blue-400">CH</span>
+            </h1>
+            <p className="text-xl text-slate-400 font-medium leading-relaxed">
+              The Swiss standard for secure commercial exchanges. Protect your transactions with our advanced escrow solutions.
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                <Lock className="w-6 h-6 text-blue-400" />
+              </div>
+              <div>
+                <h3 className="text-white font-bold text-lg">Encrypted Transactions</h3>
+                <p className="text-slate-500 text-sm">Every data point is encrypted with military-grade protocols.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                <CreditCard className="w-6 h-6 text-blue-400" />
+              </div>
+              <div>
+                <h3 className="text-white font-bold text-lg">Global Payments</h3>
+                <p className="text-slate-500 text-sm">Send and receive funds across 150+ countries instantly.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Side - Auth Form */}
+      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-8 md:p-12 relative">
+        <div className="w-full max-w-md">
+          {/* Mobile Logo Only */}
+          <div className="lg:hidden flex flex-col items-center mb-10">
+            <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center mb-4 overflow-hidden shadow-lg border border-slate-100">
+              <Image
+                src="/logo.jpg"
+                alt="SecurePay CH Logo"
+                width={64}
+                height={64}
+                className="object-contain"
+              />
+            </div>
+            <h2 className="text-2xl font-black text-slate-900 tracking-tight">SecurePay CH</h2>
+          </div>
+
+          <div className="mb-10 text-center lg:text-left">
+            <h2 className="text-4xl font-black text-slate-900 tracking-tight mb-2">
+              {isLogin ? 'Welcome back' : 'Start for free'}
+            </h2>
+            <p className="text-slate-500 font-medium">Please enter your details to continue</p>
+          </div>
+
+          {/* Form Card */}
+          <div className="space-y-8">
+            {/* Toggle */}
+            <div className="flex p-1.5 bg-slate-100 rounded-2xl">
+              <button
+                onClick={() => setIsLogin(true)}
+                className={`flex-1 py-3 text-sm font-black rounded-xl transition-all duration-300 ${isLogin ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-400 hover:text-slate-600'
+                  }`}
+              >
+                Log In
+              </button>
+              <button
+                onClick={() => setIsLogin(false)}
+                className={`flex-1 py-3 text-sm font-black rounded-xl transition-all duration-300 ${!isLogin ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-400 hover:text-slate-600'
+                  }`}
+              >
+                Sign Up
+              </button>
+            </div>
+
+            <form onSubmit={handleAuth} className="space-y-6">
+              {/* Account Type Selection */}
+              <div className="flex gap-3 p-1.5 bg-slate-50 rounded-2xl border border-slate-100">
+                <label className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 cursor-pointer rounded-xl transition-all border ${accountType === 'buyer' ? 'bg-white border-slate-200 shadow-sm' : 'border-transparent'}`}>
+                  <input
+                    type="radio"
+                    name="accountType"
+                    value="buyer"
+                    checked={accountType === 'buyer'}
+                    onChange={(e) => setAccountType(e.target.value)}
+                    className="sr-only"
+                  />
+                  <span className={`text-sm font-black ${accountType === 'buyer' ? 'text-slate-900' : 'text-slate-400'}`}>Buyer Account</span>
+                </label>
+                <label className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 cursor-pointer rounded-xl transition-all border ${accountType === 'seller' ? 'bg-white border-slate-200 shadow-sm' : 'border-transparent'}`}>
+                  <input
+                    type="radio"
+                    name="accountType"
+                    value="seller"
+                    checked={accountType === 'seller'}
+                    onChange={(e) => setAccountType(e.target.value)}
+                    className="sr-only"
+                  />
+                  <span className={`text-sm font-black ${accountType === 'seller' ? 'text-slate-900' : 'text-slate-400'}`}>Seller Account</span>
+                </label>
+              </div>
+
+              <div className="space-y-5">
+                {!isLogin && (
+                  <div className="space-y-2 group">
+                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
+                    <input
+                      type="text"
+                      value={formData.fullName}
+                      onChange={(e) => handleChange('fullName', e.target.value)}
+                      placeholder="e.g. John Doe"
+                      className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:border-slate-900 focus:ring-8 focus:ring-slate-900/5 outline-none transition-all placeholder:text-slate-300 font-bold"
+                      required={!isLogin}
+                    />
+                  </div>
+                )}
+
+                <div className="space-y-2 group">
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => handleChange('email', e.target.value)}
+                    placeholder="name@example.com"
+                    className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:border-slate-900 focus:ring-8 focus:ring-slate-900/5 outline-none transition-all placeholder:text-slate-300 font-bold"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2 group">
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Password</label>
+                  <input
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) => handleChange('password', e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:border-slate-900 focus:ring-8 focus:ring-slate-900/5 outline-none transition-all placeholder:text-slate-300 font-bold"
+                    required
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="group w-full py-4 bg-slate-900 text-white font-black rounded-2xl hover:bg-slate-800 active:scale-[0.98] transition-all shadow-xl shadow-slate-900/20 text-lg flex items-center justify-center gap-2"
+              >
+                {isLogin ? 'Sign In' : 'Create Account'}
+                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </form>
+
+            <div className="text-center">
+              {isLogin ? (
+                <button className="text-sm text-slate-400 font-bold hover:text-slate-900 transition-colors">
+                  Forgot your password?
+                </button>
+              ) : (
+                <p className="text-sm text-slate-400 font-bold">
+                  By signing up, you agree to our <span className="text-slate-900 hover:underline cursor-pointer">Terms of Service</span>
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer info */}
+        <div className="absolute bottom-8 text-center w-full px-8 pointer-events-none opacity-40">
+          <p className="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em]">
+            © 2024 SecurePay CH · Digital Asset Protection · Global Escrow
           </p>
         </div>
-
-        {/* Login/Sign Up Toggle */}
-        <div className="flex rounded-lg bg-gray-100 p-1 mb-6">
-          <button
-            onClick={() => setIsLogin(true)}
-            className={`flex-1 py-3 rounded-md font-medium transition-all ${
-              isLogin
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Login
-          </button>
-          <button
-            onClick={() => setIsLogin(false)}
-            className={`flex-1 py-3 rounded-md font-medium transition-all ${
-              !isLogin
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Sign Up
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit}>
-          {/* Account Type */}
-          <div className="mb-6">
-            <label className="block text-sm font-semibold text-gray-900 mb-3">
-              Account Type
-            </label>
-            <div className="flex gap-4">
-              <label className="flex-1 flex items-center gap-3 cursor-pointer">
-                <input
-                  type="radio"
-                  name="accountType"
-                  value="buyer"
-                  checked={accountType === 'buyer'}
-                  onChange={(e) => setAccountType(e.target.value)}
-                  className="w-5 h-5 text-indigo-600 focus:ring-indigo-500"
-                />
-                <span className="text-gray-700 font-medium">Buyer</span>
-              </label>
-              <label className="flex-1 flex items-center gap-3 cursor-pointer">
-                <input
-                  type="radio"
-                  name="accountType"
-                  value="seller"
-                  checked={accountType === 'seller'}
-                  onChange={(e) => setAccountType(e.target.value)}
-                  className="w-5 h-5 text-indigo-600 focus:ring-indigo-500"
-                />
-                <span className="text-gray-700 font-medium">Seller</span>
-              </label>
-            </div>
-          </div>
-
-          {/* Full Name (Sign Up only) */}
-          {!isLogin && (
-            <div className="mb-4">
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Full Name
-              </label>
-              <input
-                type="text"
-                value={formData.fullName}
-                onChange={(e) => handleChange('fullName', e.target.value)}
-                placeholder="Enter your name"
-                className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-20 outline-none transition-all"
-                required={!isLogin}
-              />
-            </div>
-          )}
-
-          {/* Phone Number (Sign Up only) */}
-          {!isLogin && (
-            <div className="mb-4">
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Phone Number
-              </label>
-              <input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => handleChange('phone', e.target.value)}
-                placeholder="Enter phone number"
-                className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-20 outline-none transition-all"
-                required={!isLogin}
-              />
-            </div>
-          )}
-
-          {/* Email */}
-          <div className="mb-4">
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              value={formData.email}
-              onChange={(e) => handleChange('email', e.target.value)}
-              placeholder="Enter your email"
-              className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-20 outline-none transition-all"
-              required
-            />
-          </div>
-
-          {/* Password */}
-          <div className="mb-6">
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
-              Password
-            </label>
-            <input
-              type="password"
-              value={formData.password}
-              onChange={(e) => handleChange('password', e.target.value)}
-              placeholder="Enter password"
-              className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-20 outline-none transition-all"
-              required
-            />
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            className="w-full py-4 bg-gray-900 text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors shadow-lg"
-          >
-            {isLogin ? 'Login' : 'Sign Up'}
-          </button>
-        </form>
-
-        {/* Forgot Password (Login only) */}
-        {isLogin && (
-          <div className="mt-4 text-center">
-            <button className="text-sm text-indigo-600 hover:text-indigo-700">
-              Forgot password?
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

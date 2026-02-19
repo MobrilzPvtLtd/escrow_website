@@ -2,10 +2,29 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import {
-  Bell, User, Settings, LogOut, 
-  Package, Plus, ShieldCheck, ChevronRight, X, CheckCircle, Star,
-  Mail, Phone, MapPin, ArrowLeft, Upload, Camera, Check, Clock, Truck
+  Bell, User, Settings, LogOut,
+  Package, Plus, ShieldCheck, Search,
+  ArrowLeft,
+  Mail,
+  Phone,
+  MapPin,
+  ChevronRight,
+  Clock,
+  CheckCircle,
+  FileText,
+  AlertCircle,
+  ArrowRight,
+  Edit,
+  Wallet,
+  Lock,
+  X,
+  Check,
+  Camera,
+  Upload,
+  Star,
+  Truck
 } from 'lucide-react';
 
 type UserType = 'buyer' | 'seller';
@@ -203,13 +222,13 @@ function NewPurchaseModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-        
+
         {/* Header */}
-        <div className="bg-indigo-600 px-6 py-5">
+        <div className="bg-slate-900 px-6 py-5">
           <div className="flex items-start justify-between">
             <div>
               <h2 className="text-lg font-bold text-white">Create New Transaction</h2>
-              <p className="text-indigo-200 text-xs mt-1">Initiate a secure escrow payment</p>
+              <p className="text-slate-300 text-xs mt-1">Initiate a secure Escrow payment</p>
             </div>
             <button onClick={onClose} className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors">
               <X className="w-4 h-4 text-white" />
@@ -287,10 +306,10 @@ function NewPurchaseModal({ onClose }: { onClose: () => void }) {
 // ─────────────────────────────────────────────
 // Transaction Detail View
 // ─────────────────────────────────────────────
-function TransactionDetailView({ 
-  transaction, 
-  onBack 
-}: { 
+function TransactionDetailView({
+  transaction,
+  onBack
+}: {
   transaction: Transaction;
   onBack: () => void;
 }) {
@@ -336,7 +355,7 @@ function TransactionDetailView({
             <div>
               <h1 className="text-2xl font-bold text-gray-900 mb-1">{transaction.productName}</h1>
               <p className="text-sm text-gray-500">Order ID: {transaction.id}</p>
-              <p className="text-sm text-indigo-600 mt-1">{transaction.seller}</p>
+              <p className="text-sm text-slate-600 mt-1">{transaction.seller}</p>
             </div>
           </div>
           <div className="text-right">
@@ -356,9 +375,8 @@ function TransactionDetailView({
             <div key={index} className="flex gap-4">
               {/* Icon */}
               <div className="flex flex-col items-center">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  step.completed ? 'bg-indigo-600' : 'bg-gray-200'
-                }`}>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${step.completed ? 'bg-slate-900' : 'bg-gray-200'
+                  }`}>
                   {step.completed ? (
                     <Check className="w-5 h-5 text-white" />
                   ) : index === transaction.timeline.findIndex(t => !t.completed) ? (
@@ -368,7 +386,7 @@ function TransactionDetailView({
                   )}
                 </div>
                 {index < transaction.timeline.length - 1 && (
-                  <div className={`w-0.5 h-12 ${step.completed ? 'bg-indigo-600' : 'bg-gray-200'}`} />
+                  <div className={`w-0.5 h-12 ${step.completed ? 'bg-slate-900' : 'bg-gray-200'}`} />
                 )}
               </div>
 
@@ -390,8 +408,8 @@ function TransactionDetailView({
       {isDelivered && !isConfirmed && (
         <div className="bg-white rounded-2xl p-8 border border-gray-100">
           <div className="flex items-start gap-4 mb-6">
-            <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center">
-              <Camera className="w-6 h-6 text-indigo-600" />
+            <div className="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center">
+              <Camera className="w-6 h-6 text-slate-900" />
             </div>
             <div>
               <h2 className="text-lg font-bold text-gray-900 mb-1">Confirm Delivery</h2>
@@ -410,7 +428,7 @@ function TransactionDetailView({
                 onChange={handlePhotoUpload}
                 className="hidden"
               />
-              <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-indigo-500 hover:bg-indigo-50/50 transition-all">
+              <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-slate-900 hover:bg-slate-50/50 transition-all">
                 {uploadedPhoto ? (
                   <div className="space-y-4">
                     <img
@@ -437,7 +455,7 @@ function TransactionDetailView({
           {uploadedPhoto && (
             <button
               onClick={handleConfirmDelivery}
-              className="w-full py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
+              className="w-full py-3 bg-slate-900 text-white font-semibold rounded-lg hover:bg-slate-800 transition-colors"
             >
               Confirm Delivery & Release Payment
             </button>
@@ -455,7 +473,7 @@ function TransactionDetailView({
             <div>
               <h3 className="text-lg font-bold text-green-900">Delivery Confirmed!</h3>
               <p className="text-sm text-green-700 mt-1">
-                Payment has been released to the seller. Thank you for using SecureEscrow!
+                Payment has been released to the seller. Thank you for using SecurePay CH!
               </p>
             </div>
           </div>
@@ -468,131 +486,229 @@ function TransactionDetailView({
 // ─────────────────────────────────────────────
 // Profile View
 // ─────────────────────────────────────────────
-function ProfileView({ 
-  userType, 
-  userEmail, 
-  onSignOut 
-}: { 
-  userType: UserType; 
+function ProfileView({ userType, userEmail, onSignOut, onBack }: {
+  userType: UserType;
   userEmail: string;
   onSignOut: () => void;
+  onBack: () => void;
 }) {
-  const profile = {
-    buyer: {
-      name: 'Utkarsh Bhaiya',
-      email: userEmail || 'jgadjgjd@gmail.com',
-      phone: '+1 (555) 123-4567',
-      address: '123 Main Street, City, State 12345',
-      joinedDate: 'January 2024',
-      count: 4,
-      rating: 4.8,
-      countLabel: 'Total Purchases',
-    },
-    seller: {
-      name: 'John Seller',
-      email: userEmail || 'john.seller@example.com',
-      phone: '+1 (555) 123-4567',
-      address: '123 Business Street, City, State 12345',
-      joinedDate: 'January 2024',
-      count: 3,
-      rating: 4.9,
-      countLabel: 'Total Sales',
-    },
+  const [isEditing, setIsEditing] = useState(false);
+  const [profileData, setProfileData] = useState({
+    name: 'Utkarsh Bhaiya',
+    email: userEmail || 'jgadjgjd@gmail.com',
+    phone: '+1 (555) 123-4567',
+    address: '123 Main Street, City, State 12345',
+  });
+
+  const handleSave = () => {
+    setIsEditing(false);
   };
-  const p = profile[userType];
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* Back Button */}
+      <button
+        onClick={onBack}
+        className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-900 hover:bg-slate-50 transition-all shadow-sm group"
+      >
+        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+        Back to Dashboard
+      </button>
+
       {/* Profile Hero */}
-      <div className="bg-white rounded-2xl p-8 border border-gray-100 mb-6">
-        <div className="flex items-center gap-6">
-          <div className="w-24 h-24 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0">
-            <User className="w-12 h-12 text-white" />
+      <div className="bg-white rounded-[32px] p-10 border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-slate-50 rounded-full blur-3xl -mr-32 -mt-32 z-0" />
+
+        <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
+          <div className="w-32 h-32 rounded-[24px] bg-slate-900 flex items-center justify-center flex-shrink-0 shadow-lg shadow-slate-900/20 rotate-3">
+            <User className="w-16 h-16 text-white -rotate-3" />
           </div>
-          <div className="flex-1">
-            <h2 className="text-2xl font-bold text-gray-900 mb-1">{p.name}</h2>
-            <p className="text-sm text-gray-500 mb-4">
-              {userType === 'buyer' ? 'Buyer' : 'Seller'} since {p.joinedDate}
-            </p>
-            <div className="flex gap-8">
-              <div>
-                <p className="text-xs text-gray-400 mb-1">{p.countLabel}</p>
-                <p className="text-xl font-bold text-gray-900">{p.count}</p>
+
+          <div className="flex-1 text-center md:text-left">
+            <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={profileData.name}
+                  onChange={(e) => setProfileData(prev => ({ ...prev, name: e.target.value }))}
+                  className="text-3xl font-extrabold text-slate-900 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 outline-none focus:ring-4 focus:ring-slate-900/5"
+                />
+              ) : (
+                <h2 className="text-4xl font-extrabold text-slate-900 tracking-tight">{profileData.name}</h2>
+              )}
+              <span className="inline-flex px-3 py-1 bg-slate-100 text-slate-600 text-xs font-bold rounded-full uppercase tracking-wider">
+                {userType}
+              </span>
+            </div>
+
+            <div className="flex flex-wrap justify-center md:justify-start gap-8 mb-8">
+              <div className="group cursor-default">
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-1 group-hover:text-slate-900 transition-colors">Member Since</p>
+                <p className="text-2xl font-black text-slate-900">2024</p>
               </div>
-              <div>
-                <p className="text-xs text-gray-400 mb-1">Rating</p>
-                <p className="text-xl font-bold text-gray-900">{p.rating.toFixed(1)} ⭐</p>
+              <div className="group cursor-default">
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-1 group-hover:text-slate-900 transition-colors">Performance</p>
+                <p className="text-2xl font-black text-slate-900">4.8 <span className="text-sm font-medium text-slate-400">/ 5.0</span></p>
               </div>
+              <div className="group cursor-default">
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-1 group-hover:text-slate-900 transition-colors">Trust Score</p>
+                <p className="text-2xl font-black text-slate-900">98%</p>
+              </div>
+              {userType === 'seller' && (
+                <div className="group cursor-default">
+                  <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-1 group-hover:text-slate-900 transition-colors">Total Received</p>
+                  <p className="text-2xl font-black text-slate-900">$12,450</p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 min-w-[160px]">
+              {isEditing ? (
+                <>
+                  <button
+                    onClick={handleSave}
+                    className="px-8 py-4 bg-slate-900 text-white rounded-2xl text-sm font-bold hover:bg-slate-800 transition-all shadow-lg active:scale-[0.98] flex items-center justify-center gap-2"
+                  >
+                    Save Changes
+                  </button>
+                  <button
+                    onClick={() => setIsEditing(false)}
+                    className="px-8 py-4 bg-slate-100 text-slate-600 rounded-2xl text-sm font-bold hover:bg-slate-200 transition-all flex items-center justify-center"
+                  >
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="px-8 py-4 bg-slate-900 text-white rounded-2xl text-sm font-bold hover:bg-slate-800 transition-all shadow-lg active:scale-[0.98] flex items-center justify-center gap-2"
+                >
+                  <Edit className="w-4 h-4" />
+                  Edit Profile
+                </button>
+              )}
             </div>
           </div>
-          <button className="px-6 py-3 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-colors">
-            Edit Profile
-          </button>
         </div>
       </div>
 
-      {/* Contact & Settings Grid */}
-      <div className="grid grid-cols-2 gap-6">
-        {/* Contact Information */}
-        <div className="bg-white rounded-2xl p-6 border border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-900 mb-5">Contact Information</h3>
-          <div className="space-y-4">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center">
-                <Mail className="w-5 h-5 text-indigo-600" />
+      {/* Detailed Info Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+        {/* Contact Info */}
+        <div className="bg-white rounded-[32px] p-8 border border-slate-100 shadow-xl shadow-slate-200/20">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-900">
+              <Mail className="w-5 h-5" />
+            </div>
+            <h3 className="font-black text-slate-900 uppercase tracking-widest text-sm">Contact Information</h3>
+          </div>
+
+          <div className="space-y-6">
+            <div className="flex items-start gap-4">
+              <div className="mt-1 w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                <Mail className="w-4 h-4 text-blue-500" />
               </div>
-              <div>
-                <p className="text-xs text-gray-400">Email</p>
-                <p className="text-sm font-medium text-gray-900">{p.email}</p>
+              <div className="flex-1">
+                <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Email Address</p>
+                {isEditing ? (
+                  <input
+                    type="email"
+                    value={profileData.email}
+                    onChange={(e) => setProfileData(prev => ({ ...prev, email: e.target.value }))}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-slate-900 font-bold outline-none focus:ring-4 focus:ring-slate-900/5 transition-all"
+                  />
+                ) : (
+                  <p className="text-slate-900 font-bold">{profileData.email}</p>
+                )}
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center">
-                <Phone className="w-5 h-5 text-indigo-600" />
+
+            <div className="flex items-start gap-4">
+              <div className="mt-1 w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
+                <Phone className="w-4 h-4 text-green-500" />
               </div>
-              <div>
-                <p className="text-xs text-gray-400">Phone</p>
-                <p className="text-sm font-medium text-gray-900">{p.phone}</p>
+              <div className="flex-1">
+                <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Phone Number</p>
+                {isEditing ? (
+                  <input
+                    type="tel"
+                    value={profileData.phone}
+                    onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-slate-900 font-bold outline-none focus:ring-4 focus:ring-slate-900/5 transition-all"
+                  />
+                ) : (
+                  <p className="text-slate-900 font-bold">{profileData.phone}</p>
+                )}
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center">
-                <MapPin className="w-5 h-5 text-indigo-600" />
+
+            <div className="flex items-start gap-4">
+              <div className="mt-1 w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0">
+                <MapPin className="w-4 h-4 text-amber-500" />
               </div>
-              <div>
-                <p className="text-xs text-gray-400">Address</p>
-                <p className="text-sm font-medium text-gray-900">{p.address}</p>
+              <div className="flex-1">
+                <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Mailing Address</p>
+                {isEditing ? (
+                  <textarea
+                    value={profileData.address}
+                    onChange={(e) => setProfileData(prev => ({ ...prev, address: e.target.value }))}
+                    rows={3}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-slate-900 font-bold outline-none focus:ring-4 focus:ring-slate-900/5 transition-all resize-none"
+                  />
+                ) : (
+                  <p className="text-slate-900 font-bold leading-relaxed">{profileData.address}</p>
+                )}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Account Settings + Logout */}
-        <div className="space-y-6">
-          {/* Account Settings */}
-          <div className="bg-white rounded-2xl p-6 border border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-900 mb-5">Account Settings</h3>
-            <div className="space-y-2">
-              {['Payment Methods', 'Notification Preferences', 'Security Settings', 'Privacy Policy'].map((label) => (
-                <button
-                  key={label}
-                  className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <span className="text-sm font-medium text-gray-700">{label}</span>
-                  <ChevronRight className="w-4 h-4 text-gray-300" />
-                </button>
-              ))}
+        {/* Account Settings */}
+        <div className="bg-white rounded-[32px] p-8 border border-slate-100 shadow-xl shadow-slate-200/20">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-900">
+              <Lock className="w-5 h-5" />
             </div>
+            <h3 className="font-black text-slate-900 uppercase tracking-widest text-sm">Security & Account</h3>
           </div>
 
-          {/* Logout Section */}
-          <div className="bg-white rounded-2xl p-6 border border-gray-100">
-            <button
-              onClick={onSignOut}
-              className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors font-semibold text-sm"
-            >
-              <LogOut className="w-5 h-5" />
-              Sign Out
+          <div className="space-y-4">
+            <button className="w-full flex items-center justify-between p-4 rounded-2xl hover:bg-slate-50 transition-colors group border border-transparent hover:border-slate-100">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center group-hover:bg-white transition-colors">
+                  <Lock className="w-5 h-5 text-slate-400 group-hover:text-slate-900 transition-colors" />
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-black text-slate-900">Change Password</p>
+                  <p className="text-xs text-slate-400">Update your account security</p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-slate-200 group-hover:text-slate-900 transition-transform group-hover:translate-x-1" />
+            </button>
+
+            <button className="w-full flex items-center justify-between p-4 rounded-2xl hover:bg-slate-50 transition-colors group border border-transparent hover:border-slate-100">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center group-hover:bg-white transition-colors">
+                  <Bell className="w-5 h-5 text-slate-400 group-hover:text-slate-900 transition-colors" />
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-black text-slate-900">Notifications</p>
+                  <p className="text-xs text-slate-400">Manage transaction alerts</p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-slate-200 group-hover:text-slate-900 transition-transform group-hover:translate-x-1" />
+            </button>
+
+            <button className="w-full flex items-center justify-between p-4 rounded-2xl hover:bg-red-50 transition-colors group border border-transparent hover:border-red-100 mt-4">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-red-100/50 flex items-center justify-center group-hover:bg-red-100 transition-colors">
+                  <LogOut className="w-5 h-5 text-red-400 group-hover:text-red-600 transition-colors" />
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-black text-red-600">Delete Account</p>
+                  <p className="text-xs text-red-300">Permanently remove all data</p>
+                </div>
+              </div>
             </button>
           </div>
         </div>
@@ -637,36 +753,49 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      
+
       {/* Top Navigation Bar */}
       <header className="bg-white border-b border-gray-100 px-8 py-4 sticky top-0 z-30">
         <div className="flex items-center justify-between">
           {/* Left - Logo */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center">
-              <ShieldCheck className="w-5 h-5 text-white" />
+          <div className="flex items-center gap-4">
+            <div className="h-12 w-64 bg-white rounded-xl flex items-center justify-center overflow-hidden border border-gray-100 shadow-sm p-1">
+              <Image
+                src="/logo.jpg"
+                alt="SecurePay CH Logo"
+                width={180}
+                height={40}
+                className="object-contain w-full h-full"
+              />
             </div>
             <div>
-              <p className="text-base font-bold text-gray-900">SecureEscrow</p>
+              <p className="text-base font-bold text-gray-900">SecurePay CH</p>
               <p className="text-xs text-gray-400">{userType === 'buyer' ? 'Buyer Portal' : 'Seller Portal'}</p>
             </div>
           </div>
 
           {/* Right - Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <button className="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors">
               <Bell className="w-5 h-5 text-gray-600" />
             </button>
-            <button 
+            <button
               onClick={() => setCurrentView(currentView === 'dashboard' ? 'profile' : 'dashboard')}
-              className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center hover:bg-indigo-700 transition-colors"
+              className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center hover:bg-slate-800 transition-colors"
             >
               <User className="w-5 h-5 text-white" />
+            </button>
+            <button
+              onClick={handleSignOut}
+              className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-bold hover:bg-red-100 transition-colors border border-red-100"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
             </button>
             {userType === 'buyer' && currentView === 'dashboard' && (
               <button
                 onClick={() => setShowNewPurchaseModal(true)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 transition-colors"
+                className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-lg text-sm font-semibold hover:bg-slate-800 transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 New Purchase
@@ -676,34 +805,70 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* Page Header */}
+      {/* Page Header - Premium Hero */}
       {currentView === 'dashboard' && (
-        <div className="bg-white border-b border-gray-100 px-8 py-6">
-          <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
-            <span>📊</span>
-            <span>Overview</span>
+        <section className="bg-slate-900 px-8 py-16 relative overflow-hidden">
+          {/* Abstract Background */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] -mr-48 -mt-48" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full blur-[80px] -ml-32 -mb-32" />
+
+          <div className="max-w-7xl mx-auto relative z-10">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-12">
+              <div className="max-w-xl text-center lg:text-left">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 mb-6 backdrop-blur-md">
+                  <Star className="w-3.5 h-3.5 text-blue-400 fill-blue-400" />
+                  <span className="text-[10px] font-black text-blue-100 uppercase tracking-[0.2em]">Verified Secure Portal</span>
+                </div>
+                <h1 className="text-5xl lg:text-6xl font-black text-white tracking-tight mb-4 leading-tight">
+                  {userType === 'buyer' ? 'Buyer' : 'Seller'} <span className="text-blue-400">Dashboard</span>
+                </h1>
+                <p className="text-slate-400 text-lg font-medium leading-relaxed">
+                  Welcome back, <span className="text-white font-bold">Utkarsh</span>. You have <span className="text-white font-bold">3 active deals</span> pending your review.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full lg:max-w-2xl">
+                <div className="bg-white/10 backdrop-blur-xl border border-white/10 p-8 rounded-[32px] hover:bg-white/15 transition-all group">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 group-hover:text-white transition-colors">Active Deals</p>
+                  <p className="text-4xl font-black text-white">03</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-xl border border-white/10 p-8 rounded-[32px] hover:bg-white/15 transition-all group">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 group-hover:text-white transition-colors">Completed</p>
+                  <p className="text-4xl font-black text-white">12</p>
+                </div>
+                {userType === 'seller' && (
+                  <div className="bg-blue-500/10 backdrop-blur-xl border border-blue-500/30 p-8 rounded-[32px] hover:bg-blue-500/20 transition-all group lg:col-span-full">
+                    <p className="text-[10px] font-black text-blue-300 uppercase tracking-widest mb-4 group-hover:text-blue-200 transition-colors flex items-center gap-2">
+                      <Wallet className="w-4 h-4" />
+                      Total Amount Received
+                    </p>
+                    <p className="text-4xl font-black text-white leading-none tracking-tight">$12,450.00</p>
+                    <p className="text-blue-400/60 text-[10px] font-black uppercase tracking-widest mt-4">Swiss Standard Verified</p>
+                  </div>
+                )}
+                {userType === 'buyer' && (
+                  <div className="bg-green-500/10 backdrop-blur-xl border border-green-500/30 p-8 rounded-[32px] hover:bg-green-500/20 transition-all group">
+                    <p className="text-[10px] font-black text-green-300 uppercase tracking-widest mb-4 group-hover:text-green-200 transition-colors">Trust Score</p>
+                    <p className="text-4xl font-black text-white">99%</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            {userType === 'buyer' ? 'Buyer Dashboard' : 'Seller Dashboard'}
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            {userType === 'buyer' 
-              ? 'Manage your purchases and transactions' 
-              : 'Manage your sales and shipments'}
-          </p>
-        </div>
+        </section>
       )}
 
       {/* Main Content */}
       <main className="p-8">
         {currentView === 'profile' ? (
-          <ProfileView 
-            userType={userType} 
+          <ProfileView
+            userType={userType}
             userEmail={userEmail}
             onSignOut={handleSignOut}
+            onBack={() => setCurrentView('dashboard')}
           />
         ) : currentView === 'transaction-detail' && selectedTransaction ? (
-          <TransactionDetailView 
+          <TransactionDetailView
             transaction={selectedTransaction}
             onBack={() => setCurrentView('dashboard')}
           />
@@ -714,21 +879,19 @@ export default function Dashboard() {
               <div className="flex gap-2 mb-6 max-w-md">
                 <button
                   onClick={() => setActiveTab('sellers')}
-                  className={`flex-1 py-3 px-6 rounded-xl font-semibold text-sm transition-all ${
-                    activeTab === 'sellers'
-                      ? 'bg-indigo-600 text-white shadow-md'
-                      : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300'
-                  }`}
+                  className={`flex-1 py-3 px-6 rounded-xl font-semibold text-sm transition-all ${activeTab === 'sellers'
+                    ? 'bg-slate-900 text-white shadow-md'
+                    : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300'
+                    }`}
                 >
                   Verified Sellers
                 </button>
                 <button
                   onClick={() => setActiveTab('transactions')}
-                  className={`flex-1 py-3 px-6 rounded-xl font-semibold text-sm transition-all ${
-                    activeTab === 'transactions'
-                      ? 'bg-indigo-600 text-white shadow-md'
-                      : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300'
-                  }`}
+                  className={`flex-1 py-3 px-6 rounded-xl font-semibold text-sm transition-all ${activeTab === 'transactions'
+                    ? 'bg-slate-900 text-white shadow-md'
+                    : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300'
+                    }`}
                 >
                   Transactions
                 </button>
@@ -737,7 +900,7 @@ export default function Dashboard() {
 
             {/* Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
-              
+
               {/* Buyer - Verified Sellers */}
               {userType === 'buyer' && activeTab === 'sellers' && verifiedSellers.map((seller) => (
                 <div
@@ -745,14 +908,14 @@ export default function Dashboard() {
                   className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-shadow cursor-pointer group"
                 >
                   <div className="flex items-start gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
-                      <CheckCircle className="w-6 h-6 text-indigo-600" />
+                    <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center flex-shrink-0">
+                      <CheckCircle className="w-6 h-6 text-slate-900" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-gray-900 text-base mb-1 group-hover:text-indigo-600 transition-colors">
+                      <h3 className="font-bold text-gray-900 text-base mb-1 group-hover:text-slate-600 transition-colors">
                         {seller.name}
                       </h3>
-                      <p className="text-sm text-indigo-600 mb-2">{seller.domain}</p>
+                      <p className="text-sm text-slate-600 mb-2">{seller.domain}</p>
                     </div>
                     <div className="flex items-center gap-1 bg-amber-50 px-2.5 py-1 rounded-lg flex-shrink-0">
                       <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
@@ -776,7 +939,7 @@ export default function Dashboard() {
                         {transaction.icon}
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900 text-base group-hover:text-indigo-600 transition-colors">
+                        <h3 className="font-semibold text-gray-900 text-base group-hover:text-slate-600 transition-colors">
                           {transaction.productName}
                         </h3>
                         <p className="text-sm text-gray-500">{transaction.seller}</p>
@@ -795,7 +958,7 @@ export default function Dashboard() {
                     <span className="text-2xl font-bold text-gray-900">
                       ${transaction.amount.toFixed(2)}
                     </span>
-                    <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-indigo-600 transition-colors" />
+                    <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-slate-600 transition-colors" />
                   </div>
                 </div>
               ))}
@@ -808,7 +971,7 @@ export default function Dashboard() {
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div>
-                      <p className="text-sm font-bold text-indigo-600 mb-1">{order.id}</p>
+                      <p className="text-sm font-bold text-slate-600 mb-1">{order.id}</p>
                       <p className="text-xs text-gray-400">{order.date}</p>
                     </div>
                     <p className="text-2xl font-bold text-gray-900">${order.amount.toFixed(2)}</p>
@@ -824,7 +987,7 @@ export default function Dashboard() {
                       {order.statusText}
                     </span>
                     {order.canShip ? (
-                      <button className="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors">
+                      <button className="px-4 py-2 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-colors">
                         Mark as Shipped
                       </button>
                     ) : (
@@ -842,7 +1005,7 @@ export default function Dashboard() {
         {/* Footer */}
         <footer className="mt-12 pt-6 border-t border-gray-100 text-center">
           <p className="text-xs text-gray-400">
-            SecureEscrow Platform · Trusted Intermediary · Demo Mode
+            SecurePay CH Platform · Trusted Intermediary · Demo Mode
           </p>
         </footer>
       </main>
