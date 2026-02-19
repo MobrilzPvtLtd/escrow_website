@@ -531,7 +531,7 @@ function ProfileView({ userType, userEmail, onSignOut, onBack }: {
                   type="text"
                   value={profileData.name}
                   onChange={(e) => setProfileData(prev => ({ ...prev, name: e.target.value }))}
-                  className="text-3xl font-extrabold text-slate-900 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 outline-none focus:ring-4 focus:ring-slate-900/5"
+                  className="text-3xl font-extrabold text-slate-900 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 outline-none focus:ring-4 focus:ring-slate-900/5 w-full"
                 />
               ) : (
                 <h2 className="text-4xl font-extrabold text-slate-900 tracking-tight">{profileData.name}</h2>

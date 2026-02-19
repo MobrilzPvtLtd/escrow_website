@@ -167,7 +167,7 @@ export default function AuthScreen() {
                       value={formData.fullName}
                       onChange={(e) => handleChange('fullName', e.target.value)}
                       placeholder="e.g. John Doe"
-                      className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:border-slate-900 focus:ring-8 focus:ring-slate-900/5 outline-none transition-all placeholder:text-slate-300 font-bold"
+                      className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:border-slate-900 focus:ring-8 focus:ring-slate-900/5 outline-none transition-all placeholder:text-slate-300 font-bold text-slate-900"
                       required={!isLogin}
                     />
                   </div>
