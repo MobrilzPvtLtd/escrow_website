@@ -2,72 +2,491 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bell, User, Send, ArrowLeft, Mail, Phone, MapPin, Package, DollarSign } from 'lucide-react';
+import {
+  Bell, User, Settings, LogOut, 
+  Package, Plus, ShieldCheck, ChevronRight, X, CheckCircle, Star,
+  Mail, Phone, MapPin, ArrowLeft, Upload, Camera, Check, Clock, Truck
+} from 'lucide-react';
 
-export default function Dashboard() {
-  const router = useRouter();
-  const [userType, setUserType] = useState<'buyer' | 'seller'>('buyer');
-  const [userEmail, setUserEmail] = useState('');
-  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' or 'profile'
-  const [showNewPurchaseModal, setShowNewPurchaseModal] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [newTransaction, setNewTransaction] = useState({
-    sellerEmail: '',
-    productName: '',
-    productDescription: '',
-    amount: ''
+type UserType = 'buyer' | 'seller';
+type View = 'dashboard' | 'profile' | 'transaction-detail';
+
+interface TransactionForm {
+  sellerEmail: string;
+  productName: string;
+  productDescription: string;
+  amount: string;
+}
+
+interface Transaction {
+  id: string;
+  productName: string;
+  seller: string;
+  amount: number;
+  status: string;
+  statusText: string;
+  statusColor: string;
+  date: string;
+  icon: string;
+  timeline: {
+    step: string;
+    completed: boolean;
+    timestamp?: string;
+  }[];
+}
+
+// Mock transaction data with timeline
+const transactions: Transaction[] = [
+  {
+    id: 'ESC-9901',
+    productName: 'iPhone 15 Pro',
+    seller: 'amazon.com',
+    amount: 999.00,
+    status: 'shipped',
+    statusText: 'Shipped',
+    statusColor: 'text-blue-600 bg-blue-50',
+    date: 'Oct 24',
+    icon: '📱',
+    timeline: [
+      { step: 'Payment Secured', completed: true, timestamp: 'Oct 24, 10:30 AM' },
+      { step: 'Seller Confirmed', completed: true, timestamp: 'Oct 24, 11:15 AM' },
+      { step: 'Shipped', completed: true, timestamp: 'Oct 24, 2:45 PM' },
+      { step: 'On the Way', completed: false },
+      { step: 'Delivered', completed: false },
+    ]
+  },
+  {
+    id: 'ESC-8820',
+    productName: 'Vintage Watch',
+    seller: 'ebay.com',
+    amount: 450.00,
+    status: 'delivered',
+    statusText: 'Delivered Pending Confirmation',
+    statusColor: 'text-orange-600 bg-orange-50',
+    date: 'Oct 23',
+    icon: '⌚',
+    timeline: [
+      { step: 'Payment Secured', completed: true, timestamp: 'Oct 23, 9:00 AM' },
+      { step: 'Seller Confirmed', completed: true, timestamp: 'Oct 23, 9:30 AM' },
+      { step: 'Shipped', completed: true, timestamp: 'Oct 23, 1:00 PM' },
+      { step: 'On the Way', completed: true, timestamp: 'Oct 24, 8:00 AM' },
+      { step: 'Delivered', completed: true, timestamp: 'Oct 25, 3:20 PM' },
+    ]
+  },
+  {
+    id: 'ESC-7712',
+    productName: 'MacBook Air',
+    seller: 'bestbuy.com',
+    amount: 1200.00,
+    status: 'secured',
+    statusText: 'Payment Secured',
+    statusColor: 'text-green-600 bg-green-50',
+    date: 'Oct 20',
+    icon: '💻',
+    timeline: [
+      { step: 'Payment Secured', completed: true, timestamp: 'Oct 20, 2:15 PM' },
+      { step: 'Seller Confirmed', completed: false },
+      { step: 'Shipped', completed: false },
+      { step: 'On the Way', completed: false },
+      { step: 'Delivered', completed: false },
+    ]
+  },
+  {
+    id: 'ESC-6543',
+    productName: 'Gaming Chair',
+    seller: 'secretlab.co',
+    amount: 350.00,
+    status: 'refunded',
+    statusText: 'Refunded',
+    statusColor: 'text-red-600 bg-red-50',
+    date: 'Oct 18',
+    icon: '🪑',
+    timeline: [
+      { step: 'Payment Secured', completed: true, timestamp: 'Oct 18, 11:00 AM' },
+      { step: 'Refund Requested', completed: true, timestamp: 'Oct 19, 2:30 PM' },
+      { step: 'Refund Approved', completed: true, timestamp: 'Oct 19, 4:00 PM' },
+    ]
+  },
+];
+
+// Verified sellers data
+const verifiedSellers = [
+  {
+    name: 'Apple Official Store',
+    domain: 'apple.com',
+    description: 'Authorized electronics and hardware provider.',
+    rating: 4.9,
+  },
+  {
+    name: 'Amazon Warehouse',
+    domain: 'amazon.com',
+    description: 'Certified refurbished and open-box products.',
+    rating: 4.7,
+  },
+  {
+    name: 'Best Buy Elite',
+    domain: 'bestbuy.com',
+    description: 'Premium partner for high-end home appliances.',
+    rating: 4.8,
+  },
+  {
+    name: 'eBay Premium',
+    domain: 'ebay.com',
+    description: 'Trusted marketplace for new and pre-owned items.',
+    rating: 4.6,
+  },
+  {
+    name: 'Newegg Elite',
+    domain: 'newegg.com',
+    description: 'Leading tech and electronics retailer.',
+    rating: 4.7,
+  },
+  {
+    name: 'B&H Photo Video',
+    domain: 'bhphotovideo.com',
+    description: 'Professional photography and video equipment.',
+    rating: 4.9,
+  },
+];
+
+// Seller orders
+const sellerOrders = [
+  {
+    id: 'ESC-9901',
+    buyer: 'John Doe',
+    amount: 999.00,
+    status: 'secured',
+    statusText: 'Payment Secured',
+    statusColor: 'text-orange-600 bg-orange-50',
+    date: 'Oct 24',
+    canShip: true,
+  },
+  {
+    id: 'ESC-8820',
+    buyer: 'Sarah Smith',
+    amount: 450.00,
+    status: 'shipped',
+    statusText: 'Shipped',
+    statusColor: 'text-blue-600 bg-blue-50',
+    date: 'Oct 23',
+    canShip: false,
+  },
+  {
+    id: 'ESC-7712',
+    buyer: 'Mike Ross',
+    amount: 1200.00,
+    status: 'completed',
+    statusText: 'Completed',
+    statusColor: 'text-green-600 bg-green-50',
+    date: 'Oct 20',
+    canShip: false,
+  },
+];
+
+// ─────────────────────────────────────────────
+// New Purchase Modal
+// ─────────────────────────────────────────────
+function NewPurchaseModal({ onClose }: { onClose: () => void }) {
+  const [form, setForm] = useState<TransactionForm>({
+    sellerEmail: '', productName: '', productDescription: '', amount: '',
   });
 
-  // Load user type from localStorage on component mount
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedUserType = localStorage.getItem('userType') as 'buyer' | 'seller' | null;
-      const storedEmail = localStorage.getItem('userEmail');
-      
-      if (storedUserType && (storedUserType === 'buyer' || storedUserType === 'seller')) {
-        setUserType(storedUserType);
-      }
-      if (storedEmail) {
-        setUserEmail(storedEmail);
-      }
+  const handleChange = (field: keyof TransactionForm, value: string) =>
+    setForm((prev) => ({ ...prev, [field]: value }));
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log('New transaction:', form);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+        
+        {/* Header */}
+        <div className="bg-indigo-600 px-6 py-5">
+          <div className="flex items-start justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-white">Create New Transaction</h2>
+              <p className="text-indigo-200 text-xs mt-1">Initiate a secure escrow payment</p>
+            </div>
+            <button onClick={onClose} className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors">
+              <X className="w-4 h-4 text-white" />
+            </button>
+          </div>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Seller Email</label>
+            <input
+              type="email"
+              value={form.sellerEmail}
+              onChange={(e) => handleChange('sellerEmail', e.target.value)}
+              placeholder="seller@example.com"
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Product Name</label>
+            <input
+              type="text"
+              value={form.productName}
+              onChange={(e) => handleChange('productName', e.target.value)}
+              placeholder="e.g., iPhone 15 Pro"
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Product Description</label>
+            <textarea
+              value={form.productDescription}
+              onChange={(e) => handleChange('productDescription', e.target.value)}
+              placeholder="Describe the product..."
+              rows={3}
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Amount (USD)</label>
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">$</span>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={form.amount}
+                onChange={(e) => handleChange('amount', e.target.value)}
+                placeholder="0.00"
+                className="w-full pl-8 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                required
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="w-full py-3 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors text-sm mt-2"
+          >
+            Create Transaction
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Transaction Detail View
+// ─────────────────────────────────────────────
+function TransactionDetailView({ 
+  transaction, 
+  onBack 
+}: { 
+  transaction: Transaction;
+  onBack: () => void;
+}) {
+  const [uploadedPhoto, setUploadedPhoto] = useState<string | null>(null);
+  const [isConfirmed, setIsConfirmed] = useState(false);
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setUploadedPhoto(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
-  }, []);
+  };
 
-  const [stats] = useState({
-    totalOrders: 0,
-    pendingEarnings: 0.00,
-    releasedEarnings: 0.00
-  });
+  const handleConfirmDelivery = () => {
+    setIsConfirmed(true);
+    // Here you would typically send the confirmation to your backend
+  };
 
-  // Profile data
-  const profile: {
-    buyer: {
-      name: string;
-      email: string;
-      phone: string;
-      address: string;
-      joinedDate: string;
-      totalPurchases: number;
-      rating: number;
-    };
-    seller: {
-      name: string;
-      email: string;
-      phone: string;
-      address: string;
-      joinedDate: string;
-      totalSales: number;
-      rating: number;
-    };
-  } = {
+  const isDelivered = transaction.timeline.some(t => t.step === 'Delivered' && t.completed);
+
+  return (
+    <div className="max-w-4xl mx-auto">
+      {/* Back Button */}
+      <button
+        onClick={onBack}
+        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
+      >
+        <ArrowLeft className="w-5 h-5" />
+        <span className="font-medium">Back to Transactions</span>
+      </button>
+
+      {/* Transaction Header */}
+      <div className="bg-white rounded-2xl p-8 border border-gray-100 mb-6">
+        <div className="flex items-start justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center text-3xl">
+              {transaction.icon}
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-1">{transaction.productName}</h1>
+              <p className="text-sm text-gray-500">Order ID: {transaction.id}</p>
+              <p className="text-sm text-indigo-600 mt-1">{transaction.seller}</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-3xl font-bold text-gray-900">${transaction.amount.toFixed(2)}</p>
+            <span className={`inline-block px-3 py-1 rounded-lg text-xs font-semibold mt-2 ${transaction.statusColor}`}>
+              {transaction.statusText}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Timeline */}
+      <div className="bg-white rounded-2xl p-8 border border-gray-100 mb-6">
+        <h2 className="text-lg font-bold text-gray-900 mb-6">Order Timeline</h2>
+        <div className="space-y-6">
+          {transaction.timeline.map((step, index) => (
+            <div key={index} className="flex gap-4">
+              {/* Icon */}
+              <div className="flex flex-col items-center">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  step.completed ? 'bg-indigo-600' : 'bg-gray-200'
+                }`}>
+                  {step.completed ? (
+                    <Check className="w-5 h-5 text-white" />
+                  ) : index === transaction.timeline.findIndex(t => !t.completed) ? (
+                    <Clock className="w-5 h-5 text-gray-500" />
+                  ) : (
+                    <div className="w-2 h-2 bg-gray-400 rounded-full" />
+                  )}
+                </div>
+                {index < transaction.timeline.length - 1 && (
+                  <div className={`w-0.5 h-12 ${step.completed ? 'bg-indigo-600' : 'bg-gray-200'}`} />
+                )}
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 pb-8">
+                <p className={`font-semibold ${step.completed ? 'text-gray-900' : 'text-gray-400'}`}>
+                  {step.step}
+                </p>
+                {step.timestamp && (
+                  <p className="text-sm text-gray-500 mt-1">{step.timestamp}</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Photo Upload Section - Only show if delivered */}
+      {isDelivered && !isConfirmed && (
+        <div className="bg-white rounded-2xl p-8 border border-gray-100">
+          <div className="flex items-start gap-4 mb-6">
+            <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center">
+              <Camera className="w-6 h-6 text-indigo-600" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-gray-900 mb-1">Confirm Delivery</h2>
+              <p className="text-sm text-gray-500">
+                Upload a photo of the received product to confirm delivery and release payment to the seller.
+              </p>
+            </div>
+          </div>
+
+          {/* Photo Upload Area */}
+          <div className="mb-6">
+            <label className="block">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoUpload}
+                className="hidden"
+              />
+              <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-indigo-500 hover:bg-indigo-50/50 transition-all">
+                {uploadedPhoto ? (
+                  <div className="space-y-4">
+                    <img
+                      src={uploadedPhoto}
+                      alt="Uploaded product"
+                      className="max-h-64 mx-auto rounded-lg"
+                    />
+                    <p className="text-sm text-green-600 font-medium">Photo uploaded successfully!</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <Upload className="w-12 h-12 text-gray-400 mx-auto" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">Click to upload photo</p>
+                      <p className="text-xs text-gray-500 mt-1">PNG, JPG up to 10MB</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </label>
+          </div>
+
+          {/* Confirm Button */}
+          {uploadedPhoto && (
+            <button
+              onClick={handleConfirmDelivery}
+              className="w-full py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              Confirm Delivery & Release Payment
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Confirmation Success */}
+      {isConfirmed && (
+        <div className="bg-green-50 border border-green-200 rounded-2xl p-8">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
+              <Check className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-green-900">Delivery Confirmed!</h3>
+              <p className="text-sm text-green-700 mt-1">
+                Payment has been released to the seller. Thank you for using SecureEscrow!
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Profile View
+// ─────────────────────────────────────────────
+function ProfileView({ 
+  userType, 
+  userEmail, 
+  onSignOut 
+}: { 
+  userType: UserType; 
+  userEmail: string;
+  onSignOut: () => void;
+}) {
+  const profile = {
     buyer: {
       name: 'Utkarsh Bhaiya',
       email: userEmail || 'jgadjgjd@gmail.com',
       phone: '+1 (555) 123-4567',
       address: '123 Main Street, City, State 12345',
       joinedDate: 'January 2024',
-      totalPurchases: 0,
-      rating: 0.0
+      count: 4,
+      rating: 4.8,
+      countLabel: 'Total Purchases',
     },
     seller: {
       name: 'John Seller',
@@ -75,12 +494,133 @@ export default function Dashboard() {
       phone: '+1 (555) 123-4567',
       address: '123 Business Street, City, State 12345',
       joinedDate: 'January 2024',
-      totalSales: 0,
-      rating: 0.0
-    }
+      count: 3,
+      rating: 4.9,
+      countLabel: 'Total Sales',
+    },
   };
+  const p = profile[userType];
 
-  const currentProfile = profile[userType];
+  return (
+    <div className="max-w-5xl mx-auto">
+      {/* Profile Hero */}
+      <div className="bg-white rounded-2xl p-8 border border-gray-100 mb-6">
+        <div className="flex items-center gap-6">
+          <div className="w-24 h-24 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0">
+            <User className="w-12 h-12 text-white" />
+          </div>
+          <div className="flex-1">
+            <h2 className="text-2xl font-bold text-gray-900 mb-1">{p.name}</h2>
+            <p className="text-sm text-gray-500 mb-4">
+              {userType === 'buyer' ? 'Buyer' : 'Seller'} since {p.joinedDate}
+            </p>
+            <div className="flex gap-8">
+              <div>
+                <p className="text-xs text-gray-400 mb-1">{p.countLabel}</p>
+                <p className="text-xl font-bold text-gray-900">{p.count}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400 mb-1">Rating</p>
+                <p className="text-xl font-bold text-gray-900">{p.rating.toFixed(1)} ⭐</p>
+              </div>
+            </div>
+          </div>
+          <button className="px-6 py-3 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-colors">
+            Edit Profile
+          </button>
+        </div>
+      </div>
+
+      {/* Contact & Settings Grid */}
+      <div className="grid grid-cols-2 gap-6">
+        {/* Contact Information */}
+        <div className="bg-white rounded-2xl p-6 border border-gray-100">
+          <h3 className="text-lg font-semibold text-gray-900 mb-5">Contact Information</h3>
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center">
+                <Mail className="w-5 h-5 text-indigo-600" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Email</p>
+                <p className="text-sm font-medium text-gray-900">{p.email}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center">
+                <Phone className="w-5 h-5 text-indigo-600" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Phone</p>
+                <p className="text-sm font-medium text-gray-900">{p.phone}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center">
+                <MapPin className="w-5 h-5 text-indigo-600" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Address</p>
+                <p className="text-sm font-medium text-gray-900">{p.address}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Account Settings + Logout */}
+        <div className="space-y-6">
+          {/* Account Settings */}
+          <div className="bg-white rounded-2xl p-6 border border-gray-100">
+            <h3 className="text-lg font-semibold text-gray-900 mb-5">Account Settings</h3>
+            <div className="space-y-2">
+              {['Payment Methods', 'Notification Preferences', 'Security Settings', 'Privacy Policy'].map((label) => (
+                <button
+                  key={label}
+                  className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <span className="text-sm font-medium text-gray-700">{label}</span>
+                  <ChevronRight className="w-4 h-4 text-gray-300" />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Logout Section */}
+          <div className="bg-white rounded-2xl p-6 border border-gray-100">
+            <button
+              onClick={onSignOut}
+              className="w-full flex items-center justify-center gap-3 py-3 px-4 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors font-semibold text-sm"
+            >
+              <LogOut className="w-5 h-5" />
+              Sign Out
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Main Dashboard
+// ─────────────────────────────────────────────
+export default function Dashboard() {
+  const router = useRouter();
+  const [userType, setUserType] = useState<UserType>('buyer');
+  const [userEmail, setUserEmail] = useState('');
+  const [currentView, setCurrentView] = useState<View>('dashboard');
+  const [activeTab, setActiveTab] = useState<'sellers' | 'transactions'>('sellers');
+  const [showNewPurchaseModal, setShowNewPurchaseModal] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedUserType = localStorage.getItem('userType') as UserType | null;
+      const storedEmail = localStorage.getItem('userEmail');
+      if (storedUserType === 'buyer' || storedUserType === 'seller') setUserType(storedUserType);
+      if (storedEmail) setUserEmail(storedEmail);
+    }
+  }, []);
 
   const handleSignOut = () => {
     if (typeof window !== 'undefined') {
@@ -90,462 +630,226 @@ export default function Dashboard() {
     router.push('/');
   };
 
-  const handleNewPurchaseClick = () => {
-    setShowNewPurchaseModal(true);
+  const handleTransactionClick = (transaction: Transaction) => {
+    setSelectedTransaction(transaction);
+    setCurrentView('transaction-detail');
   };
 
-  const handleCloseModal = () => {
-    setShowNewPurchaseModal(false);
-    setNewTransaction({
-      sellerEmail: '',
-      productName: '',
-      productDescription: '',
-      amount: ''
-    });
-  };
-
-  const handleTransactionChange = (field: keyof typeof newTransaction, value: string) => {
-    setNewTransaction({
-      ...newTransaction,
-      [field]: value
-    });
-  };
-
-  const handleSecurePayment = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    console.log('New transaction:', newTransaction);
-    // Handle payment logic here
-    handleCloseModal();
-  };
-
-  const handleToggleNotifications = () => {
-    setShowNotifications(!showNotifications);
-  };
-
-  // Profile View
-  if (currentView === 'profile') {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <div className="flex items-center gap-3">
-                <button 
-                  onClick={() => setCurrentView('dashboard')}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                >
-                  <ArrowLeft className="w-5 h-5 text-gray-600" />
-                </button>
-                <div>
-                  <h1 className="text-lg font-bold text-gray-900">Profile</h1>
-                  <p className="text-xs text-gray-500">Manage your account</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button 
-                  onClick={handleToggleNotifications}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                >
-                  <Bell className="w-5 h-5 text-gray-600" />
-                </button>
-                <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium">
-                  Edit Profile
-                </button>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Profile Content */}
-        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-6">
-            <div className="flex items-start gap-6">
-              <div className="w-24 h-24 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
-                <User className="w-12 h-12 text-white" />
-              </div>
-              
-              <div className="flex-1">
-                <h2 className="text-2xl font-bold text-gray-900 mb-1">{currentProfile.name}</h2>
-                <p className="text-gray-500 mb-4">{userType === 'buyer' ? 'Buyer' : 'Seller'} since {currentProfile.joinedDate}</p>
-                
-                <div className="flex gap-6">
-                  <div>
-                    <p className="text-sm text-gray-500">{userType === 'buyer' ? 'Total Purchases' : 'Total Sales'}</p>
-                    <p className="text-lg font-semibold text-gray-900">
-                    {userType === 'buyer' 
-  ? (currentProfile as typeof profile.buyer).totalPurchases 
-  : (currentProfile as typeof profile.seller).totalSales}                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Rating</p>
-                    <p className="text-lg font-semibold text-gray-900">{currentProfile.rating.toFixed(1)} ⭐</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
-            
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center">
-                  <Mail className="w-5 h-5 text-indigo-600" />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500">Email</p>
-                  <p className="text-sm font-medium text-gray-900">{currentProfile.email}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center">
-                  <Phone className="w-5 h-5 text-indigo-600" />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500">Phone</p>
-                  <p className="text-sm font-medium text-gray-900">{currentProfile.phone}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center">
-                  <MapPin className="w-5 h-5 text-indigo-600" />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500">Address</p>
-                  <p className="text-sm font-medium text-gray-900">{currentProfile.address}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Settings</h3>
-            
-            <div className="space-y-3">
-              <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors">
-                <span className="text-sm font-medium text-gray-900">Payment Methods</span>
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-
-              <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors">
-                <span className="text-sm font-medium text-gray-900">Notification Preferences</span>
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-
-              <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors">
-                <span className="text-sm font-medium text-gray-900">Security Settings</span>
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-
-              <button 
-                onClick={handleSignOut}
-                className="w-full flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors text-red-600"
-              >
-                <span className="text-sm font-medium">Sign Out</span>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
-  // Dashboard View (Buyer or Seller)
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center">
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <h1 className="text-lg font-bold text-gray-900">SecureEscrow</h1>
-                <p className="text-xs text-gray-500">{userType === 'buyer' ? 'Buyer Portal' : 'Seller Portal'}</p>
-              </div>
+      
+      {/* Top Navigation Bar */}
+      <header className="bg-white border-b border-gray-100 px-8 py-4 sticky top-0 z-30">
+        <div className="flex items-center justify-between">
+          {/* Left - Logo */}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center">
+              <ShieldCheck className="w-5 h-5 text-white" />
             </div>
+            <div>
+              <p className="text-base font-bold text-gray-900">SecureEscrow</p>
+              <p className="text-xs text-gray-400">{userType === 'buyer' ? 'Buyer Portal' : 'Seller Portal'}</p>
+            </div>
+          </div>
 
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={handleToggleNotifications}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          {/* Right - Actions */}
+          <div className="flex items-center gap-3">
+            <button className="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors">
+              <Bell className="w-5 h-5 text-gray-600" />
+            </button>
+            <button 
+              onClick={() => setCurrentView(currentView === 'dashboard' ? 'profile' : 'dashboard')}
+              className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center hover:bg-indigo-700 transition-colors"
+            >
+              <User className="w-5 h-5 text-white" />
+            </button>
+            {userType === 'buyer' && currentView === 'dashboard' && (
+              <button
+                onClick={() => setShowNewPurchaseModal(true)}
+                className="flex items-center gap-2 px-4 py-2.5 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 transition-colors"
               >
-                <Bell className="w-5 h-5 text-gray-600" />
+                <Plus className="w-4 h-4" />
+                New Purchase
               </button>
-              <button 
-                onClick={() => setCurrentView('profile')}
-                className="p-2 bg-indigo-50 hover:bg-indigo-100 rounded-full transition-colors"
-              >
-                <User className="w-5 h-5 text-indigo-600" />
-              </button>
-              {userType === 'seller' && (
-                <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                  <Send className="w-5 h-5 text-gray-600" />
-                </button>
-              )}
-            </div>
+            )}
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+      {/* Page Header */}
+      {currentView === 'dashboard' && (
+        <div className="bg-white border-b border-gray-100 px-8 py-6">
+          <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
+            <span>📊</span>
+            <span>Overview</span>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">
             {userType === 'buyer' ? 'Buyer Dashboard' : 'Seller Dashboard'}
-          </h2>
-          <p className="text-gray-600">
-            {userType === 'buyer' ? 'Manage your purchases and transactions' : 'Manage your sales and shipments'}
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            {userType === 'buyer' 
+              ? 'Manage your purchases and transactions' 
+              : 'Manage your sales and shipments'}
           </p>
         </div>
+      )}
 
-        {/* Buyer Dashboard */}
-        {userType === 'buyer' && (
+      {/* Main Content */}
+      <main className="p-8">
+        {currentView === 'profile' ? (
+          <ProfileView 
+            userType={userType} 
+            userEmail={userEmail}
+            onSignOut={handleSignOut}
+          />
+        ) : currentView === 'transaction-detail' && selectedTransaction ? (
+          <TransactionDetailView 
+            transaction={selectedTransaction}
+            onBack={() => setCurrentView('dashboard')}
+          />
+        ) : (
           <>
-            <div className="flex justify-end mb-6">
-              <button 
-                onClick={handleNewPurchaseClick}
-                className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium flex items-center gap-2"
-              >
-                <DollarSign className="w-5 h-5" />
-                New Purchase
-              </button>
-            </div>
+            {/* Tab Switcher for Buyer */}
+            {userType === 'buyer' && (
+              <div className="flex gap-2 mb-6 max-w-md">
+                <button
+                  onClick={() => setActiveTab('sellers')}
+                  className={`flex-1 py-3 px-6 rounded-xl font-semibold text-sm transition-all ${
+                    activeTab === 'sellers'
+                      ? 'bg-indigo-600 text-white shadow-md'
+                      : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  Verified Sellers
+                </button>
+                <button
+                  onClick={() => setActiveTab('transactions')}
+                  className={`flex-1 py-3 px-6 rounded-xl font-semibold text-sm transition-all ${
+                    activeTab === 'transactions'
+                      ? 'bg-indigo-600 text-white shadow-md'
+                      : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  Transactions
+                </button>
+              </div>
+            )}
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-              <div className="flex flex-col items-center justify-center py-12">
-                <div className="w-24 h-24 bg-gray-100 rounded-2xl flex items-center justify-center mb-6">
-                  <Package className="w-12 h-12 text-gray-400" />
+            {/* Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+              
+              {/* Buyer - Verified Sellers */}
+              {userType === 'buyer' && activeTab === 'sellers' && verifiedSellers.map((seller) => (
+                <div
+                  key={seller.domain}
+                  className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-shadow cursor-pointer group"
+                >
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
+                      <CheckCircle className="w-6 h-6 text-indigo-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-gray-900 text-base mb-1 group-hover:text-indigo-600 transition-colors">
+                        {seller.name}
+                      </h3>
+                      <p className="text-sm text-indigo-600 mb-2">{seller.domain}</p>
+                    </div>
+                    <div className="flex items-center gap-1 bg-amber-50 px-2.5 py-1 rounded-lg flex-shrink-0">
+                      <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                      <span className="text-sm font-semibold text-amber-700">{seller.rating}</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-500 leading-relaxed">{seller.description}</p>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  No transactions yet
-                </h3>
-                <p className="text-gray-500 text-center max-w-sm">
-                  Create your first purchase to get started
-                </p>
-              </div>
-            </div>
-          </>
-        )}
+              ))}
 
-        {/* Seller Dashboard */}
-        {userType === 'seller' && (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                <p className="text-sm text-gray-500 mb-2">Total Orders</p>
-                <p className="text-4xl font-bold text-gray-900">{stats.totalOrders}</p>
-              </div>
+              {/* Buyer - Transactions */}
+              {userType === 'buyer' && activeTab === 'transactions' && transactions.map((transaction) => (
+                <div
+                  key={transaction.id}
+                  onClick={() => handleTransactionClick(transaction)}
+                  className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-shadow cursor-pointer group"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-2xl">
+                        {transaction.icon}
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 text-base group-hover:text-indigo-600 transition-colors">
+                          {transaction.productName}
+                        </h3>
+                        <p className="text-sm text-gray-500">{transaction.seller}</p>
+                      </div>
+                    </div>
+                  </div>
 
-              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                <p className="text-sm text-gray-500 mb-2">Pending Earnings</p>
-                <p className="text-4xl font-bold text-gray-900">
-                  ${stats.pendingEarnings.toFixed(2)}
-                </p>
-              </div>
-            </div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className={`inline-block px-3 py-1 rounded-lg text-xs font-semibold ${transaction.statusColor}`}>
+                      {transaction.statusText}
+                    </span>
+                    <span className="text-xs text-gray-400">{transaction.date}</span>
+                  </div>
 
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-6">
-              <p className="text-sm text-gray-500 mb-2">Released Earnings</p>
-              <p className="text-4xl font-bold text-green-600">
-                ${stats.releasedEarnings.toFixed(2)}
-              </p>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-              <div className="flex flex-col items-center justify-center py-12">
-                <div className="w-24 h-24 bg-gray-100 rounded-2xl flex items-center justify-center mb-6">
-                  <Package className="w-12 h-12 text-gray-400" />
+                  <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                    <span className="text-2xl font-bold text-gray-900">
+                      ${transaction.amount.toFixed(2)}
+                    </span>
+                    <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-indigo-600 transition-colors" />
+                  </div>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  No orders yet
-                </h3>
-                <p className="text-gray-500 text-center max-w-sm">
-                  Your orders will appear here
-                </p>
-              </div>
+              ))}
+
+              {/* Seller - Orders */}
+              {userType === 'seller' && sellerOrders.map((order) => (
+                <div
+                  key={order.id}
+                  className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-shadow"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <p className="text-sm font-bold text-indigo-600 mb-1">{order.id}</p>
+                      <p className="text-xs text-gray-400">{order.date}</p>
+                    </div>
+                    <p className="text-2xl font-bold text-gray-900">${order.amount.toFixed(2)}</p>
+                  </div>
+
+                  <div className="mb-4">
+                    <p className="text-xs text-gray-400 mb-1">Buyer</p>
+                    <p className="text-base font-semibold text-gray-900">{order.buyer}</p>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                    <span className={`inline-block px-3 py-1 rounded-lg text-xs font-semibold ${order.statusColor}`}>
+                      {order.statusText}
+                    </span>
+                    {order.canShip ? (
+                      <button className="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors">
+                        Mark as Shipped
+                      </button>
+                    ) : (
+                      <button className="text-sm text-gray-400 font-semibold">
+                        View Details
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           </>
         )}
 
         {/* Footer */}
-        <div className="mt-8 text-center space-y-2">
-          <p className="text-sm text-gray-600 font-medium">
-            SecureEscrow Platform - Trusted Intermediary for Safe Transactions
+        <footer className="mt-12 pt-6 border-t border-gray-100 text-center">
+          <p className="text-xs text-gray-400">
+            SecureEscrow Platform · Trusted Intermediary · Demo Mode
           </p>
-          <p className="text-xs text-gray-500">
-            Demo Mode: This is a prototype showcasing the core escrow workflow
-          </p>
-        </div>
+        </footer>
       </main>
 
-      {/* Create New Transaction Modal */}
+      {/* Modal */}
       {showNewPurchaseModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <div>
-                <h2 className="text-xl font-bold text-gray-900">Create New Transaction</h2>
-                <p className="text-sm text-gray-500 mt-1">Initiate a secure payment for a product purchase</p>
-              </div>
-              <button 
-                onClick={handleCloseModal}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Modal Body */}
-            <form onSubmit={handleSecurePayment} className="p-6 space-y-5">
-              {/* Seller Email */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">
-                  Seller Email
-                </label>
-                <div className="relative">
-                  <input
-                    type="email"
-                    value={newTransaction.sellerEmail}
-                    onChange={(e) => handleTransactionChange('sellerEmail', e.target.value)}
-                    placeholder="seller@example.com"
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                    required
-                  />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              {/* Product Name */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">
-                  Product Name
-                </label>
-                <input
-                  type="text"
-                  value={newTransaction.productName}
-                  onChange={(e) => handleTransactionChange('productName', e.target.value)}
-                  placeholder="e.g., iPhone 15 Pro"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  required
-                />
-              </div>
-
-              {/* Product Description */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">
-                  Product Description
-                </label>
-                <textarea
-                  value={newTransaction.productDescription}
-                  onChange={(e) => handleTransactionChange('productDescription', e.target.value)}
-                  placeholder="Describe the product..."
-                  rows={3}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
-                  required
-                />
-              </div>
-
-              {/* Amount */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">
-                  Amount ($)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={newTransaction.amount}
-                  onChange={(e) => handleTransactionChange('amount', e.target.value)}
-                  placeholder="0.00"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  required
-                />
-              </div>
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                className="w-full py-4 bg-gray-900 text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors"
-              >
-                Secure Payment
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Notifications Sidebar */}
-      {showNotifications && (
-        <div className="fixed inset-0 z-50">
-          {/* Backdrop */}
-          <div 
-            className="absolute inset-0 bg-gray-900 bg-opacity-50"
-            onClick={handleToggleNotifications}
-          />
-          
-          {/* Sidebar Panel */}
-          <div className="absolute top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col">
-            {/* Header */}
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-2xl font-bold text-gray-900">Notifications</h2>
-                <button 
-                  onClick={handleToggleNotifications}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                >
-                  <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              <p className="text-sm text-gray-500">Stay updated on your transaction activities</p>
-            </div>
-
-            {/* Empty State */}
-            <div className="flex-1 flex flex-col items-center justify-center p-8">
-              <div className="w-32 h-32 mb-6 flex items-center justify-center">
-                <Bell className="w-24 h-24 text-gray-300" strokeWidth={1.5} />
-              </div>
-              <p className="text-lg font-medium text-gray-500">No notifications yet</p>
-            </div>
-          </div>
-        </div>
+        <NewPurchaseModal onClose={() => setShowNewPurchaseModal(false)} />
       )}
     </div>
   );
