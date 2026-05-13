@@ -9,6 +9,8 @@ export default function AuthScreen() {
   const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
   const [accountType, setAccountType] = useState('buyer');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -19,13 +21,58 @@ export default function AuthScreen() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleAuth = (e: React.FormEvent) => {
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('userType', accountType);
-      localStorage.setItem('userEmail', formData.email || 'user@example.com');
+    setError('');
+    setIsLoading(true);
+
+    try {
+      if (!isLogin) {
+        // --- REGISTER API CALL ---
+        const payload = {
+          name: formData.fullName,
+          email: formData.email,
+          password: formData.password,
+          role: accountType
+        };
+
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+        const res = await fetch(`${API_URL}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.message || 'Registration failed');
+        }
+
+        // Auto-switch to login mode or directly set user data
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('userType', data.data?.role || accountType);
+          localStorage.setItem('userEmail', data.data?.email || formData.email);
+          localStorage.setItem('userName', data.data?.name || formData.fullName);
+        }
+        
+        alert('Registration Successful! Redirecting to Dashboard...');
+        router.push('/dashboard');
+        
+      } else {
+        // --- LOGIN LOGIC ---
+        // (Currently backend has no login API based on your recent changes, using mock for now)
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('userType', accountType);
+          localStorage.setItem('userEmail', formData.email || 'user@example.com');
+        }
+        router.push('/dashboard');
+      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
-    router.push('/dashboard');
   };
 
   return (
@@ -132,6 +179,11 @@ export default function AuthScreen() {
             </div>
 
             <form onSubmit={handleAuth} className="space-y-6">
+              {error && (
+                <div className="p-3 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm font-bold">
+                  {error}
+                </div>
+              )}
               {/* Account Type Selection */}
               <div className="flex gap-3 p-1.5 bg-slate-50 rounded-2xl border border-slate-100">
                 <label className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 cursor-pointer rounded-xl transition-all border ${accountType === 'buyer' ? 'bg-white border-slate-200 shadow-sm' : 'border-transparent'}`}>
@@ -200,9 +252,10 @@ export default function AuthScreen() {
 
               <button
                 type="submit"
-                className="group w-full py-4 bg-slate-900 text-white font-black rounded-2xl hover:bg-slate-800 active:scale-[0.98] transition-all shadow-xl shadow-slate-900/20 text-lg flex items-center justify-center gap-2"
+                disabled={isLoading}
+                className="group w-full py-4 bg-slate-900 text-white font-black rounded-2xl hover:bg-slate-800 active:scale-[0.98] transition-all shadow-xl shadow-slate-900/20 text-lg flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                {isLogin ? 'Sign In' : 'Create Account'}
+                {isLoading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}
                 <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
             </form>
