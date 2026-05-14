@@ -27,6 +27,8 @@ export default function AuthScreen() {
     setIsLoading(true);
 
     try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
+      
       if (!isLogin) {
         // --- REGISTER API CALL ---
         const payload = {
@@ -36,7 +38,6 @@ export default function AuthScreen() {
           role: accountType
         };
 
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
         const res = await fetch(`${API_URL}/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -49,22 +50,33 @@ export default function AuthScreen() {
           throw new Error(data.message || 'Registration failed');
         }
 
-        // Auto-switch to login mode or directly set user data
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('userType', data.data?.role || accountType);
-          localStorage.setItem('userEmail', data.data?.email || formData.email);
-          localStorage.setItem('userName', data.data?.name || formData.fullName);
-        }
-        
-        alert('Registration Successful! Redirecting to Dashboard...');
-        router.push('/dashboard');
+        alert('Registration Successful! Please login.');
+        setIsLogin(true);
         
       } else {
-        // --- LOGIN LOGIC ---
-        // (Currently backend has no login API based on your recent changes, using mock for now)
+        // --- LOGIN API CALL ---
+        const payload = {
+          email: formData.email,
+          password: formData.password
+        };
+
+        const res = await fetch(`${API_URL}/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.message || 'Login failed');
+        }
+
         if (typeof window !== 'undefined') {
-          localStorage.setItem('userType', accountType);
-          localStorage.setItem('userEmail', formData.email || 'user@example.com');
+          if (data.token) localStorage.setItem('token', data.token);
+          localStorage.setItem('userType', data.user?.role || accountType);
+          localStorage.setItem('userEmail', data.user?.email || formData.email);
+          localStorage.setItem('userName', data.user?.name || formData.fullName);
         }
         router.push('/dashboard');
       }
