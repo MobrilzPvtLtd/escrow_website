@@ -54,79 +54,23 @@ interface Transaction {
   }[];
 }
 
-// Mock transaction data with timeline
-const transactions: Transaction[] = [
-  {
-    id: 'ESC-9901',
-    productName: 'iPhone 15 Pro',
-    seller: 'amazon.com',
-    amount: 999.00,
-    status: 'shipped',
-    statusText: 'Shipped',
-    statusColor: 'text-blue-600 bg-blue-50',
-    date: 'Oct 24',
-    icon: '📱',
-    timeline: [
-      { step: 'Payment Secured', completed: true, timestamp: 'Oct 24, 10:30 AM' },
-      { step: 'Seller Confirmed', completed: true, timestamp: 'Oct 24, 11:15 AM' },
-      { step: 'Shipped', completed: true, timestamp: 'Oct 24, 2:45 PM' },
-      { step: 'On the Way', completed: false },
-      { step: 'Delivered', completed: false },
-    ]
-  },
-  {
-    id: 'ESC-8820',
-    productName: 'Vintage Watch',
-    seller: 'ebay.com',
-    amount: 450.00,
-    status: 'delivered',
-    statusText: 'Delivered Pending Confirmation',
-    statusColor: 'text-orange-600 bg-orange-50',
-    date: 'Oct 23',
-    icon: '⌚',
-    timeline: [
-      { step: 'Payment Secured', completed: true, timestamp: 'Oct 23, 9:00 AM' },
-      { step: 'Seller Confirmed', completed: true, timestamp: 'Oct 23, 9:30 AM' },
-      { step: 'Shipped', completed: true, timestamp: 'Oct 23, 1:00 PM' },
-      { step: 'On the Way', completed: true, timestamp: 'Oct 24, 8:00 AM' },
-      { step: 'Delivered', completed: true, timestamp: 'Oct 25, 3:20 PM' },
-    ]
-  },
-  {
-    id: 'ESC-7712',
-    productName: 'MacBook Air',
-    seller: 'bestbuy.com',
-    amount: 1200.00,
-    status: 'secured',
-    statusText: 'Payment Secured',
-    statusColor: 'text-green-600 bg-green-50',
-    date: 'Oct 20',
-    icon: '💻',
-    timeline: [
-      { step: 'Payment Secured', completed: true, timestamp: 'Oct 20, 2:15 PM' },
-      { step: 'Seller Confirmed', completed: false },
-      { step: 'Shipped', completed: false },
-      { step: 'On the Way', completed: false },
-      { step: 'Delivered', completed: false },
-    ]
-  },
-  {
-    id: 'ESC-6543',
-    productName: 'Gaming Chair',
-    seller: 'secretlab.co',
-    amount: 350.00,
-    status: 'refunded',
-    statusText: 'Refunded',
-    statusColor: 'text-red-600 bg-red-50',
-    date: 'Oct 18',
-    icon: '🪑',
-    timeline: [
-      { step: 'Payment Secured', completed: true, timestamp: 'Oct 18, 11:00 AM' },
-      { step: 'Refund Requested', completed: true, timestamp: 'Oct 19, 2:30 PM' },
-      { step: 'Refund Approved', completed: true, timestamp: 'Oct 19, 4:00 PM' },
-    ]
-  },
-];
+// Status helper
+const getStatusDetails = (status: string) => {
+  switch (status) {
+    case 'BLOCKED':
+      return { text: 'Payment Secured', color: 'text-green-600 bg-green-50' };
+    case 'SHIPPED':
+      return { text: 'Shipped', color: 'text-blue-600 bg-blue-50' };
+    case 'RECEIVED':
+      return { text: 'Delivered Pending Confirmation', color: 'text-orange-600 bg-orange-50' };
+    case 'RELEASED':
+      return { text: 'Completed', color: 'text-slate-600 bg-slate-50' };
+    case 'REFUNDED':
+      return { text: 'Refunded', color: 'text-red-600 bg-red-50' };
+    default:
+      return { text: status, color: 'text-gray-600 bg-gray-50' };
+  }
+};
 
 // Verified sellers data
 const verifiedSellers = [
@@ -205,18 +149,54 @@ const sellerOrders = [
 // ─────────────────────────────────────────────
 // New Purchase Modal
 // ─────────────────────────────────────────────
-function NewPurchaseModal({ onClose }: { onClose: () => void }) {
+function NewPurchaseModal({ onClose, onCreated }: { onClose: () => void, onCreated: () => void }) {
   const [form, setForm] = useState<TransactionForm>({
     sellerEmail: '', productName: '', productDescription: '', amount: '',
   });
+  const [loading, setLoading] = useState(false);
+
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
 
   const handleChange = (field: keyof TransactionForm, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('New transaction:', form);
-    onClose();
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      
+      // 1. First, we need to find the seller by email (or the backend handles this)
+      // For now, let's assume the backend expects sellerId or we search for it.
+      // But based on my previous controller, it expects sellerId. 
+      // I should probably update the backend to find by email or provide a search API.
+      // Let's assume for now we have a list of sellers and we can pick one, 
+      // or just hardcode a seller ID for the demo if email is provided.
+      
+      const res = await fetch(`${API_URL}/transactions/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          title: form.productName,
+          description: form.productDescription,
+          amount: parseFloat(form.amount),
+          sellerId: 1 // For demo, hardcoding seller ID 1 or we'd search it
+        })
+      });
+
+      if (!res.ok) throw new Error('Failed to create transaction');
+      
+      alert('Transaction Created Successfully!');
+      onCreated();
+      onClose();
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -293,9 +273,10 @@ function NewPurchaseModal({ onClose }: { onClose: () => void }) {
 
           <button
             type="submit"
-            className="w-full py-3 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors text-sm mt-2"
+            disabled={loading}
+            className="w-full py-3 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors text-sm mt-2 disabled:opacity-50"
           >
-            Create Transaction
+            {loading ? 'Creating...' : 'Create Transaction'}
           </button>
         </form>
       </div>
@@ -308,177 +289,146 @@ function NewPurchaseModal({ onClose }: { onClose: () => void }) {
 // ─────────────────────────────────────────────
 function TransactionDetailView({
   transaction,
-  onBack
+  userType,
+  onBack,
+  onUpdate
 }: {
-  transaction: Transaction;
+  transaction: any;
+  userType: string;
   onBack: () => void;
+  onUpdate: () => void;
 }) {
   const [uploadedPhoto, setUploadedPhoto] = useState<string | null>(null);
-  const [isConfirmed, setIsConfirmed] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setUploadedPhoto(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
+
+  const handleUpdateStatus = async (newStatus: string) => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/transactions/status/${transaction.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (!res.ok) throw new Error('Update failed');
+      alert(`Status updated to ${newStatus}`);
+      onUpdate();
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleConfirmDelivery = () => {
-    setIsConfirmed(true);
-    // Here you would typically send the confirmation to your backend
-  };
+  const statusSteps = [
+    { label: 'Payment Secured', key: 'BLOCKED' },
+    { label: 'Shipped', key: 'SHIPPED' },
+    { label: 'Received', key: 'RECEIVED' },
+    { label: 'Released', key: 'RELEASED' },
+  ];
 
-  const isDelivered = transaction.timeline.some(t => t.step === 'Delivered' && t.completed);
+  const currentStepIndex = statusSteps.findIndex(s => s.key === transaction.status);
 
   return (
     <div className="max-w-4xl mx-auto">
-      {/* Back Button */}
-      <button
-        onClick={onBack}
-        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
-      >
+      <button onClick={onBack} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors">
         <ArrowLeft className="w-5 h-5" />
-        <span className="font-medium">Back to Transactions</span>
+        <span className="font-medium">Back to Dashboard</span>
       </button>
 
-      {/* Transaction Header */}
-      <div className="bg-white rounded-2xl p-8 border border-gray-100 mb-6">
+      <div className="bg-white rounded-2xl p-8 border border-gray-100 mb-6 shadow-sm">
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center text-3xl">
-              {transaction.icon}
+            <div className="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center text-3xl text-white">
+              📦
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-1">{transaction.productName}</h1>
-              <p className="text-sm text-gray-500">Order ID: {transaction.id}</p>
-              <p className="text-sm text-slate-600 mt-1">{transaction.seller}</p>
+              <h1 className="text-2xl font-bold text-gray-900 mb-1">{transaction.title}</h1>
+              <p className="text-sm text-gray-500">Order ID: #{transaction.id}</p>
+              <p className="text-sm text-slate-600 mt-1">
+                {userType === 'buyer' ? `Seller: ${transaction.seller?.name}` : `Buyer: ${transaction.buyer?.name}`}
+              </p>
             </div>
           </div>
           <div className="text-right">
             <p className="text-3xl font-bold text-gray-900">${transaction.amount.toFixed(2)}</p>
-            <span className={`inline-block px-3 py-1 rounded-lg text-xs font-semibold mt-2 ${transaction.statusColor}`}>
-              {transaction.statusText}
+            <span className={`inline-block px-3 py-1 rounded-lg text-xs font-semibold mt-2 ${getStatusDetails(transaction.status).color}`}>
+              {getStatusDetails(transaction.status).text}
             </span>
           </div>
         </div>
       </div>
 
       {/* Timeline */}
-      <div className="bg-white rounded-2xl p-8 border border-gray-100 mb-6">
-        <h2 className="text-lg font-bold text-gray-900 mb-6">Order Timeline</h2>
+      <div className="bg-white rounded-2xl p-8 border border-gray-100 mb-6 shadow-sm">
+        <h2 className="text-lg font-bold text-gray-900 mb-6">Order Progress</h2>
         <div className="space-y-6">
-          {transaction.timeline.map((step, index) => (
-            <div key={index} className="flex gap-4">
-              {/* Icon */}
-              <div className="flex flex-col items-center">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${step.completed ? 'bg-slate-900' : 'bg-gray-200'
-                  }`}>
-                  {step.completed ? (
-                    <Check className="w-5 h-5 text-white" />
-                  ) : index === transaction.timeline.findIndex(t => !t.completed) ? (
-                    <Clock className="w-5 h-5 text-gray-500" />
-                  ) : (
-                    <div className="w-2 h-2 bg-gray-400 rounded-full" />
+          {statusSteps.map((step, index) => {
+            const isCompleted = index <= currentStepIndex;
+            const isCurrent = index === currentStepIndex;
+            return (
+              <div key={index} className="flex gap-4">
+                <div className="flex flex-col items-center">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isCompleted ? 'bg-slate-900' : 'bg-gray-200'}`}>
+                    {isCompleted ? <Check className="w-5 h-5 text-white" /> : <Clock className="w-5 h-5 text-gray-500" />}
+                  </div>
+                  {index < statusSteps.length - 1 && (
+                    <div className={`w-0.5 h-12 ${isCompleted ? 'bg-slate-900' : 'bg-gray-200'}`} />
                   )}
                 </div>
-                {index < transaction.timeline.length - 1 && (
-                  <div className={`w-0.5 h-12 ${step.completed ? 'bg-slate-900' : 'bg-gray-200'}`} />
-                )}
+                <div className="flex-1 pb-8">
+                  <p className={`font-semibold ${isCompleted ? 'text-gray-900' : 'text-gray-400'}`}>{step.label}</p>
+                  {isCurrent && <p className="text-xs text-blue-600 font-bold mt-1">CURRENT STATUS</p>}
+                </div>
               </div>
-
-              {/* Content */}
-              <div className="flex-1 pb-8">
-                <p className={`font-semibold ${step.completed ? 'text-gray-900' : 'text-gray-400'}`}>
-                  {step.step}
-                </p>
-                {step.timestamp && (
-                  <p className="text-sm text-gray-500 mt-1">{step.timestamp}</p>
-                )}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
-      {/* Photo Upload Section - Only show if delivered */}
-      {isDelivered && !isConfirmed && (
-        <div className="bg-white rounded-2xl p-8 border border-gray-100">
-          <div className="flex items-start gap-4 mb-6">
-            <div className="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center">
-              <Camera className="w-6 h-6 text-slate-900" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-gray-900 mb-1">Confirm Delivery</h2>
-              <p className="text-sm text-gray-500">
-                Upload a photo of the received product to confirm delivery and release payment to the seller.
-              </p>
-            </div>
-          </div>
-
-          {/* Photo Upload Area */}
-          <div className="mb-6">
-            <label className="block">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handlePhotoUpload}
-                className="hidden"
-              />
-              <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-slate-900 hover:bg-slate-50/50 transition-all">
-                {uploadedPhoto ? (
-                  <div className="space-y-4">
-                    <img
-                      src={uploadedPhoto}
-                      alt="Uploaded product"
-                      className="max-h-64 mx-auto rounded-lg"
-                    />
-                    <p className="text-sm text-green-600 font-medium">Photo uploaded successfully!</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <Upload className="w-12 h-12 text-gray-400 mx-auto" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">Click to upload photo</p>
-                      <p className="text-xs text-gray-500 mt-1">PNG, JPG up to 10MB</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </label>
-          </div>
-
-          {/* Confirm Button */}
-          {uploadedPhoto && (
+      {/* Action Buttons */}
+      <div className="bg-slate-50 rounded-2xl p-8 border border-slate-200">
+        <h3 className="font-bold text-slate-900 mb-4 uppercase tracking-widest text-xs">Available Actions</h3>
+        <div className="flex flex-wrap gap-4">
+          {userType === 'seller' && transaction.status === 'BLOCKED' && (
             <button
-              onClick={handleConfirmDelivery}
-              className="w-full py-3 bg-slate-900 text-white font-semibold rounded-lg hover:bg-slate-800 transition-colors"
+              onClick={() => handleUpdateStatus('SHIPPED')}
+              className="px-6 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all flex items-center gap-2"
             >
-              Confirm Delivery & Release Payment
+              <Truck className="w-5 h-5" /> Mark as Shipped
             </button>
           )}
-        </div>
-      )}
 
-      {/* Confirmation Success */}
-      {isConfirmed && (
-        <div className="bg-green-50 border border-green-200 rounded-2xl p-8">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
-              <Check className="w-6 h-6 text-white" />
+          {userType === 'buyer' && transaction.status === 'SHIPPED' && (
+            <button
+              onClick={() => handleUpdateStatus('RECEIVED')}
+              className="px-6 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all flex items-center gap-2"
+            >
+              <CheckCircle className="w-5 h-5" /> Confirm Receipt
+            </button>
+          )}
+
+          {userType === 'buyer' && transaction.status === 'RECEIVED' && (
+            <button
+              onClick={() => handleUpdateStatus('RELEASED')}
+              className="px-6 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all flex items-center gap-2"
+            >
+              <ShieldCheck className="w-5 h-5" /> Release Payment
+            </button>
+          )}
+          
+          {transaction.status === 'RELEASED' && (
+            <div className="flex items-center gap-2 text-green-600 font-bold">
+               <CheckCircle className="w-6 h-6" /> Deal Successfully Completed
             </div>
-            <div>
-              <h3 className="text-lg font-bold text-green-900">Delivery Confirmed!</h3>
-              <p className="text-sm text-green-700 mt-1">
-                Payment has been released to the seller. Thank you for using SecurePay CH!
-              </p>
-            </div>
-          </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -729,14 +679,63 @@ export default function Dashboard() {
   const [showNewPurchaseModal, setShowNewPurchaseModal] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
 
+  const [stats, setStats] = useState({ activeDeals: 0, completedDeals: 0, trustScore: 99 });
+  const [sellers, setSellers] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [userName, setUserName] = useState('User');
+
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const storedUserType = localStorage.getItem('userType') as UserType | null;
       const storedEmail = localStorage.getItem('userEmail');
+      const storedName = localStorage.getItem('userName');
+      const token = localStorage.getItem('token');
+
       if (storedUserType === 'buyer' || storedUserType === 'seller') setUserType(storedUserType);
       if (storedEmail) setUserEmail(storedEmail);
+      if (storedName) setUserName(storedName);
+
+      if (token) {
+        fetchDashboardData(token);
+      }
     }
   }, []);
+
+  const fetchDashboardData = async (token: string) => {
+    try {
+      // Fetch Stats
+      const statsRes = await fetch(`${API_URL}/dashboard/stats`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const statsData = await statsRes.json();
+      if (statsData.success) setStats(statsData.stats);
+
+      // Fetch Sellers
+      const sellersRes = await fetch(`${API_URL}/dashboard/sellers`);
+      const sellersData = await sellersRes.json();
+      if (sellersData.success) setSellers(sellersData.sellers);
+
+      // Fetch Transactions
+      const transRes = await fetch(`${API_URL}/dashboard/transactions`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const transData = await transRes.json();
+      if (transData.success) setTransactions(transData.transactions);
+
+      // Fetch Notifications
+      const notifRes = await fetch(`${API_URL}/transactions/notifications`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const notifData = await notifRes.json();
+      if (notifData.success) setNotifications(notifData.notifications);
+
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    }
+  };
 
   const handleSignOut = () => {
     if (typeof window !== 'undefined') {
@@ -823,18 +822,18 @@ export default function Dashboard() {
                   {userType === 'buyer' ? 'Buyer' : 'Seller'} <span className="text-blue-400">Dashboard</span>
                 </h1>
                 <p className="text-slate-400 text-lg font-medium leading-relaxed">
-                  Welcome back, <span className="text-white font-bold">Utkarsh</span>. You have <span className="text-white font-bold">3 active deals</span> pending your review.
+                  Welcome back, <span className="text-white font-bold">{userName}</span>. You have <span className="text-white font-bold">{stats.activeDeals} active deals</span> pending your review.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full lg:max-w-2xl">
                 <div className="bg-white/10 backdrop-blur-xl border border-white/10 p-8 rounded-[32px] hover:bg-white/15 transition-all group">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 group-hover:text-white transition-colors">Active Deals</p>
-                  <p className="text-4xl font-black text-white">03</p>
+                  <p className="text-4xl font-black text-white">{String(stats.activeDeals).padStart(2, '0')}</p>
                 </div>
                 <div className="bg-white/10 backdrop-blur-xl border border-white/10 p-8 rounded-[32px] hover:bg-white/15 transition-all group">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 group-hover:text-white transition-colors">Completed</p>
-                  <p className="text-4xl font-black text-white">12</p>
+                  <p className="text-4xl font-black text-white">{String(stats.completedDeals).padStart(2, '0')}</p>
                 </div>
                 {userType === 'seller' && (
                   <div className="bg-blue-500/10 backdrop-blur-xl border border-blue-500/30 p-8 rounded-[32px] hover:bg-blue-500/20 transition-all group lg:col-span-full">
@@ -842,14 +841,14 @@ export default function Dashboard() {
                       <Wallet className="w-4 h-4" />
                       Total Amount Received
                     </p>
-                    <p className="text-4xl font-black text-white leading-none tracking-tight">$12,450.00</p>
+                    <p className="text-4xl font-black text-white leading-none tracking-tight">$0.00</p>
                     <p className="text-blue-400/60 text-[10px] font-black uppercase tracking-widest mt-4">Swiss Standard Verified</p>
                   </div>
                 )}
                 {userType === 'buyer' && (
                   <div className="bg-green-500/10 backdrop-blur-xl border border-green-500/30 p-8 rounded-[32px] hover:bg-green-500/20 transition-all group">
                     <p className="text-[10px] font-black text-green-300 uppercase tracking-widest mb-4 group-hover:text-green-200 transition-colors">Trust Score</p>
-                    <p className="text-4xl font-black text-white">99%</p>
+                    <p className="text-4xl font-black text-white">{stats.trustScore}%</p>
                   </div>
                 )}
               </div>
@@ -870,7 +869,13 @@ export default function Dashboard() {
         ) : currentView === 'transaction-detail' && selectedTransaction ? (
           <TransactionDetailView
             transaction={selectedTransaction}
+            userType={userType}
             onBack={() => setCurrentView('dashboard')}
+            onUpdate={() => {
+              const token = localStorage.getItem('token');
+              if (token) fetchDashboardData(token);
+              setCurrentView('dashboard');
+            }}
           />
         ) : (
           <>
@@ -902,9 +907,9 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
 
               {/* Buyer - Verified Sellers */}
-              {userType === 'buyer' && activeTab === 'sellers' && verifiedSellers.map((seller) => (
+              {userType === 'buyer' && activeTab === 'sellers' && sellers.map((seller) => (
                 <div
-                  key={seller.domain}
+                  key={seller.id}
                   className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-shadow cursor-pointer group"
                 >
                   <div className="flex items-start gap-4 mb-4">
@@ -913,9 +918,9 @@ export default function Dashboard() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-bold text-gray-900 text-base mb-1 group-hover:text-slate-600 transition-colors">
-                        {seller.name}
+                        {seller.businessName}
                       </h3>
-                      <p className="text-sm text-slate-600 mb-2">{seller.domain}</p>
+                      <p className="text-sm text-slate-600 mb-2">{seller.website}</p>
                     </div>
                     <div className="flex items-center gap-1 bg-amber-50 px-2.5 py-1 rounded-lg flex-shrink-0">
                       <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
@@ -927,77 +932,79 @@ export default function Dashboard() {
               ))}
 
               {/* Buyer - Transactions */}
-              {userType === 'buyer' && activeTab === 'transactions' && transactions.map((transaction) => (
-                <div
-                  key={transaction.id}
-                  onClick={() => handleTransactionClick(transaction)}
-                  className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-shadow cursor-pointer group"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-2xl">
-                        {transaction.icon}
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900 text-base group-hover:text-slate-600 transition-colors">
-                          {transaction.productName}
-                        </h3>
-                        <p className="text-sm text-gray-500">{transaction.seller}</p>
+              {userType === 'buyer' && activeTab === 'transactions' && transactions.map((transaction) => {
+                const status = getStatusDetails(transaction.status);
+                return (
+                  <div
+                    key={transaction.id}
+                    onClick={() => handleTransactionClick(transaction)}
+                    className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-shadow cursor-pointer group"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-2xl">
+                          📦
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-gray-900 text-base group-hover:text-slate-600 transition-colors">
+                            {transaction.title}
+                          </h3>
+                          <p className="text-sm text-gray-500">Order ID: #{transaction.id}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-center justify-between mb-4">
-                    <span className={`inline-block px-3 py-1 rounded-lg text-xs font-semibold ${transaction.statusColor}`}>
-                      {transaction.statusText}
-                    </span>
-                    <span className="text-xs text-gray-400">{transaction.date}</span>
-                  </div>
+                    <div className="flex items-center justify-between mb-4">
+                      <span className={`inline-block px-3 py-1 rounded-lg text-xs font-semibold ${status.color}`}>
+                        {status.text}
+                      </span>
+                      <span className="text-xs text-gray-400">{new Date(transaction.createdAt).toLocaleDateString()}</span>
+                    </div>
 
-                  <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                    <span className="text-2xl font-bold text-gray-900">
-                      ${transaction.amount.toFixed(2)}
-                    </span>
-                    <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-slate-600 transition-colors" />
+                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                      <span className="text-2xl font-bold text-gray-900">
+                        ${transaction.amount.toFixed(2)}
+                      </span>
+                      <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-slate-600 transition-colors" />
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
 
               {/* Seller - Orders */}
-              {userType === 'seller' && sellerOrders.map((order) => (
-                <div
-                  key={order.id}
-                  className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-shadow"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <p className="text-sm font-bold text-slate-600 mb-1">{order.id}</p>
-                      <p className="text-xs text-gray-400">{order.date}</p>
+              {userType === 'seller' && transactions.map((order) => {
+                const status = getStatusDetails(order.status);
+                return (
+                  <div
+                    key={order.id}
+                    className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-shadow"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <p className="text-sm font-bold text-slate-600 mb-1">#{order.id}</p>
+                        <p className="text-xs text-gray-400">{new Date(order.createdAt).toLocaleDateString()}</p>
+                      </div>
+                      <p className="text-2xl font-bold text-gray-900">${order.amount.toFixed(2)}</p>
                     </div>
-                    <p className="text-2xl font-bold text-gray-900">${order.amount.toFixed(2)}</p>
-                  </div>
 
-                  <div className="mb-4">
-                    <p className="text-xs text-gray-400 mb-1">Buyer</p>
-                    <p className="text-base font-semibold text-gray-900">{order.buyer}</p>
-                  </div>
+                    <div className="mb-4">
+                      <p className="text-xs text-gray-400 mb-1">Title</p>
+                      <p className="text-base font-semibold text-gray-900">{order.title}</p>
+                    </div>
 
-                  <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                    <span className={`inline-block px-3 py-1 rounded-lg text-xs font-semibold ${order.statusColor}`}>
-                      {order.statusText}
-                    </span>
-                    {order.canShip ? (
-                      <button className="px-4 py-2 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-colors">
-                        Mark as Shipped
-                      </button>
-                    ) : (
-                      <button className="text-sm text-gray-400 font-semibold">
+                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                      <span className={`inline-block px-3 py-1 rounded-lg text-xs font-semibold ${status.color}`}>
+                        {status.text}
+                      </span>
+                      <button 
+                         onClick={() => handleTransactionClick(order)}
+                         className="px-4 py-2 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-colors">
                         View Details
                       </button>
-                    )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </>
         )}
@@ -1012,7 +1019,13 @@ export default function Dashboard() {
 
       {/* Modal */}
       {showNewPurchaseModal && (
-        <NewPurchaseModal onClose={() => setShowNewPurchaseModal(false)} />
+        <NewPurchaseModal 
+          onClose={() => setShowNewPurchaseModal(false)} 
+          onCreated={() => {
+            const token = localStorage.getItem('token');
+            if (token) fetchDashboardData(token);
+          }}
+        />
       )}
     </div>
   );
