@@ -436,9 +436,10 @@ function TransactionDetailView({
 // ─────────────────────────────────────────────
 // Profile View
 // ─────────────────────────────────────────────
-function ProfileView({ userType, userEmail, onSignOut, onBack }: {
+function ProfileView({ userType, userEmail, trustScore, onSignOut, onBack }: {
   userType: UserType;
   userEmail: string;
+  trustScore: number;
   onSignOut: () => void;
   onBack: () => void;
 }) {
@@ -502,7 +503,7 @@ function ProfileView({ userType, userEmail, onSignOut, onBack }: {
               </div>
               <div className="group cursor-default">
                 <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-1 group-hover:text-slate-900 transition-colors">Trust Score</p>
-                <p className="text-2xl font-black text-slate-900">98%</p>
+                <p className="text-2xl font-black text-slate-900">{trustScore}%</p>
               </div>
               {userType === 'seller' && (
                 <div className="group cursor-default">
@@ -679,7 +680,7 @@ export default function Dashboard() {
   const [showNewPurchaseModal, setShowNewPurchaseModal] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
 
-  const [stats, setStats] = useState({ activeDeals: 0, completedDeals: 0, trustScore: 99 });
+  const [stats, setStats] = useState({ activeDeals: 0, completedDeals: 0, trustScore: 100 });
   const [sellers, setSellers] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -863,6 +864,7 @@ export default function Dashboard() {
           <ProfileView
             userType={userType}
             userEmail={userEmail}
+            trustScore={stats.trustScore}
             onSignOut={handleSignOut}
             onBack={() => setCurrentView('dashboard')}
           />
