@@ -155,7 +155,7 @@ function NewPurchaseModal({ onClose, onCreated }: { onClose: () => void, onCreat
   });
   const [loading, setLoading] = useState(false);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://escrow-website-backend.onrender.com/api';
 
   const handleChange = (field: keyof TransactionForm, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -301,7 +301,7 @@ function TransactionDetailView({
   const [uploadedPhoto, setUploadedPhoto] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://escrow-website-backend.onrender.com/api';
 
   const handleUpdateStatus = async (newStatus: string) => {
     setLoading(true);
@@ -686,7 +686,7 @@ export default function Dashboard() {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [userName, setUserName] = useState('User');
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://escrow-website-backend.onrender.com/api';
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
