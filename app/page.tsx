@@ -5,20 +5,53 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Shield, Lock, CreditCard, ChevronRight } from 'lucide-react';
 
+interface FormData {
+  fullName: string;
+  email: string;
+  password: string;
+  businessName: string;
+  website: string;
+}
+
+const INITIAL_FORM: FormData = {
+  fullName: '',
+  email: '',
+  password: '',
+  businessName: '',
+  website: '',
+};
+
+const inputCls =
+  'w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:border-slate-900 focus:ring-8 focus:ring-slate-900/5 outline-none transition-all placeholder:text-slate-300 font-bold text-slate-900';
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-2">
+      <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
+
 export default function AuthScreen() {
   const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
-  const [accountType, setAccountType] = useState('buyer');
+  const [accountType, setAccountType] = useState<'buyer' | 'seller'>('buyer');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    password: '',
-  });
+  const [formData, setFormData] = useState<FormData>(INITIAL_FORM);
 
-  const handleChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleChange = (field: keyof FormData, value: string) =>
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
+  const persistSession = (data: any, fallbackEmail: string, fallbackName: string, fallbackRole: string) => {
+    if (typeof window === 'undefined') return;
+    if (data.token) localStorage.setItem('token', data.token);
+    localStorage.setItem('userType',  data.user?.role  || fallbackRole);
+    localStorage.setItem('userEmail', data.user?.email || fallbackEmail);
+    localStorage.setItem('userName',  data.user?.name  || fallbackName);
   };
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -26,58 +59,59 @@ export default function AuthScreen() {
     setError('');
     setIsLoading(true);
 
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
+
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
-      
       if (!isLogin) {
-        // --- REGISTER API CALL ---
-        const payload = {
-          name: formData.fullName,
-          email: formData.email,
+        // ── REGISTER ──────────────────────────────────────────────────────────
+        const payload: Record<string, string> = {
+          name:     formData.fullName,
+          email:    formData.email,
           password: formData.password,
-          role: accountType
+          role:     accountType,
         };
 
-        const res = await fetch(`${API_URL}/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          throw new Error(data.message || 'Registration failed');
+        if (accountType === 'seller') {
+          payload.businessName = formData.businessName;
+          payload.website      = formData.website;
         }
 
-        alert('Registration Successful! Please login.');
-        setIsLogin(true);
-        
+        const res  = await fetch(`${API_URL}/register`, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Registration failed');
+
+        // Auto-login: if the API returns a token on register use it directly,
+        // otherwise do a follow-up login call.
+        if (data.token) {
+          persistSession(data, formData.email, formData.fullName, accountType);
+          router.push('/dashboard');
+        } else {
+          // Fallback: hit /login immediately after registration
+          const loginRes  = await fetch(`${API_URL}/login`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ email: formData.email, password: formData.password }),
+          });
+          const loginData = await loginRes.json();
+          if (!loginRes.ok) throw new Error(loginData.message || 'Auto-login failed');
+          persistSession(loginData, formData.email, formData.fullName, accountType);
+          router.push('/dashboard');
+        }
+
       } else {
-        // --- LOGIN API CALL ---
-        const payload = {
-          email: formData.email,
-          password: formData.password
-        };
-
-        const res = await fetch(`${API_URL}/login`, {
-          method: 'POST',
+        // ── LOGIN ─────────────────────────────────────────────────────────────
+        const res  = await fetch(`${API_URL}/login`, {
+          method:  'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          body:    JSON.stringify({ email: formData.email, password: formData.password }),
         });
-
         const data = await res.json();
-
-        if (!res.ok) {
-          throw new Error(data.message || 'Login failed');
-        }
-
-        if (typeof window !== 'undefined') {
-          if (data.token) localStorage.setItem('token', data.token);
-          localStorage.setItem('userType', data.user?.role || accountType);
-          localStorage.setItem('userEmail', data.user?.email || formData.email);
-          localStorage.setItem('userName', data.user?.name || formData.fullName);
-        }
+        if (!res.ok) throw new Error(data.message || 'Login failed');
+        persistSession(data, formData.email, formData.fullName, accountType);
         router.push('/dashboard');
       }
     } catch (err: any) {
@@ -87,16 +121,20 @@ export default function AuthScreen() {
     }
   };
 
+  const isSeller = accountType === 'seller';
+
   return (
     <div className="min-h-screen flex bg-white font-sans overflow-hidden">
-      {/* Left Side - Hero Section */}
+
+      {/* ── Left Hero ─────────────────────────────────────────────────────── */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-slate-900 items-center justify-center overflow-hidden">
-        {/* Abstract Background Design */}
         <div className="absolute inset-0 z-0">
           <div className="absolute top-[-10%] left-[-10%] w-[70%] h-[70%] bg-white/5 rounded-full blur-[120px] animate-pulse" />
           <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-blue-500/10 rounded-full blur-[100px]" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-[0.03] pointer-events-none"
-            style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-[0.03] pointer-events-none"
+            style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }}
+          />
         </div>
 
         <div className="relative z-10 max-w-lg px-12 text-center lg:text-left">
@@ -107,13 +145,7 @@ export default function AuthScreen() {
 
           <div className="mb-12">
             <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mb-6 overflow-hidden shadow-2xl border border-white/20">
-              <Image
-                src="/logo.jpg"
-                alt="SecurePay CH Logo"
-                width={80}
-                height={80}
-                className="object-contain"
-              />
+              <Image src="/logo.jpg" alt="SecurePay CH Logo" width={80} height={80} className="object-contain" />
             </div>
             <h1 className="text-6xl font-black text-white tracking-tight mb-6 leading-tight">
               SecurePay <span className="text-blue-400">CH</span>
@@ -146,19 +178,14 @@ export default function AuthScreen() {
         </div>
       </div>
 
-      {/* Right Side - Auth Form */}
+      {/* ── Right Form ────────────────────────────────────────────────────── */}
       <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-8 md:p-12 relative">
         <div className="w-full max-w-md">
-          {/* Mobile Logo Only */}
+
+          {/* Mobile logo */}
           <div className="lg:hidden flex flex-col items-center mb-10">
             <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center mb-4 overflow-hidden shadow-lg border border-slate-100">
-              <Image
-                src="/logo.jpg"
-                alt="SecurePay CH Logo"
-                width={64}
-                height={64}
-                className="object-contain"
-              />
+              <Image src="/logo.jpg" alt="SecurePay CH Logo" width={64} height={64} className="object-contain" />
             </div>
             <h2 className="text-2xl font-black text-slate-900 tracking-tight">SecurePay CH</h2>
           </div>
@@ -170,24 +197,24 @@ export default function AuthScreen() {
             <p className="text-slate-500 font-medium">Please enter your details to continue</p>
           </div>
 
-          {/* Form Card */}
           <div className="space-y-8">
-            {/* Toggle */}
+
+            {/* Login / Sign Up toggle */}
             <div className="flex p-1.5 bg-slate-100 rounded-2xl">
-              <button
-                onClick={() => setIsLogin(true)}
-                className={`flex-1 py-3 text-sm font-black rounded-xl transition-all duration-300 ${isLogin ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-400 hover:text-slate-600'
+              {(['login', 'signup'] as const).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => { setIsLogin(mode === 'login'); setError(''); }}
+                  className={`flex-1 py-3 text-sm font-black rounded-xl transition-all duration-300 ${
+                    (mode === 'login') === isLogin
+                      ? 'bg-white text-slate-900 shadow-xl'
+                      : 'text-slate-400 hover:text-slate-600'
                   }`}
-              >
-                Log In
-              </button>
-              <button
-                onClick={() => setIsLogin(false)}
-                className={`flex-1 py-3 text-sm font-black rounded-xl transition-all duration-300 ${!isLogin ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-400 hover:text-slate-600'
-                  }`}
-              >
-                Sign Up
-              </button>
+                >
+                  {mode === 'login' ? 'Log In' : 'Sign Up'}
+                </button>
+              ))}
             </div>
 
             <form onSubmit={handleAuth} className="space-y-6">
@@ -196,70 +223,94 @@ export default function AuthScreen() {
                   {error}
                 </div>
               )}
-              {/* Account Type Selection */}
+
+              {/* Account type */}
               <div className="flex gap-3 p-1.5 bg-slate-50 rounded-2xl border border-slate-100">
-                <label className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 cursor-pointer rounded-xl transition-all border ${accountType === 'buyer' ? 'bg-white border-slate-200 shadow-sm' : 'border-transparent'}`}>
-                  <input
-                    type="radio"
-                    name="accountType"
-                    value="buyer"
-                    checked={accountType === 'buyer'}
-                    onChange={(e) => setAccountType(e.target.value)}
-                    className="sr-only"
-                  />
-                  <span className={`text-sm font-black ${accountType === 'buyer' ? 'text-slate-900' : 'text-slate-400'}`}>Buyer Account</span>
-                </label>
-                <label className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 cursor-pointer rounded-xl transition-all border ${accountType === 'seller' ? 'bg-white border-slate-200 shadow-sm' : 'border-transparent'}`}>
-                  <input
-                    type="radio"
-                    name="accountType"
-                    value="seller"
-                    checked={accountType === 'seller'}
-                    onChange={(e) => setAccountType(e.target.value)}
-                    className="sr-only"
-                  />
-                  <span className={`text-sm font-black ${accountType === 'seller' ? 'text-slate-900' : 'text-slate-400'}`}>Seller Account</span>
-                </label>
+                {(['buyer', 'seller'] as const).map((type) => (
+                  <label
+                    key={type}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 cursor-pointer rounded-xl transition-all border ${
+                      accountType === type ? 'bg-white border-slate-200 shadow-sm' : 'border-transparent'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="accountType"
+                      value={type}
+                      checked={accountType === type}
+                      onChange={() => setAccountType(type)}
+                      className="sr-only"
+                    />
+                    <span className={`text-sm font-black capitalize ${accountType === type ? 'text-slate-900' : 'text-slate-400'}`}>
+                      {type} Account
+                    </span>
+                  </label>
+                ))}
               </div>
 
               <div className="space-y-5">
+                {/* Full name – register only */}
                 {!isLogin && (
-                  <div className="space-y-2 group">
-                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
+                  <Field label="Full Name">
                     <input
                       type="text"
                       value={formData.fullName}
                       onChange={(e) => handleChange('fullName', e.target.value)}
                       placeholder="e.g. John Doe"
-                      className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:border-slate-900 focus:ring-8 focus:ring-slate-900/5 outline-none transition-all placeholder:text-slate-300 font-bold text-slate-900"
-                      required={!isLogin}
+                      className={inputCls}
+                      required
                     />
-                  </div>
+                  </Field>
                 )}
 
-                <div className="space-y-2 group">
-                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
+                {/* Seller-only fields – register only */}
+                {!isLogin && isSeller && (
+                  <>
+                    <Field label="Business Name">
+                      <input
+                        type="text"
+                        value={formData.businessName}
+                        onChange={(e) => handleChange('businessName', e.target.value)}
+                        placeholder="e.g. Acme Corp"
+                        className={inputCls}
+                        required
+                      />
+                    </Field>
+
+                    <Field label="Website">
+                      <input
+                        type="url"
+                        value={formData.website}
+                        onChange={(e) => handleChange('website', e.target.value)}
+                        placeholder="https://yourstore.com"
+                        className={inputCls}
+                        required
+                      />
+                    </Field>
+                  </>
+                )}
+
+                <Field label="Email Address">
                   <input
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleChange('email', e.target.value)}
                     placeholder="name@example.com"
-                    className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:border-slate-900 focus:ring-8 focus:ring-slate-900/5 outline-none transition-all placeholder:text-slate-300 font-bold text-slate-900"
+                    className={inputCls}
                     required
                   />
-                </div>
+                </Field>
 
-                <div className="space-y-2 group">
-                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Password</label>
+                <Field label="Password">
                   <input
                     type="password"
                     value={formData.password}
                     onChange={(e) => handleChange('password', e.target.value)}
                     placeholder="••••••••"
-                    className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:border-slate-900 focus:ring-8 focus:ring-slate-900/5 outline-none transition-all placeholder:text-slate-300 font-bold text-slate-900"
+                    className={inputCls}
                     required
                   />
-                </div>
+                </Field>
               </div>
 
               <button
@@ -267,26 +318,26 @@ export default function AuthScreen() {
                 disabled={isLoading}
                 className="group w-full py-4 bg-slate-900 text-white font-black rounded-2xl hover:bg-slate-800 active:scale-[0.98] transition-all shadow-xl shadow-slate-900/20 text-lg flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                {isLoading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}
+                {isLoading ? 'Processing…' : isLogin ? 'Sign In' : 'Create Account'}
                 <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
             </form>
 
             <div className="text-center">
               {isLogin ? (
-                <button className="text-sm text-slate-400 font-bold hover:text-slate-900 transition-colors">
+                <button type="button" className="text-sm text-slate-400 font-bold hover:text-slate-900 transition-colors">
                   Forgot your password?
                 </button>
               ) : (
                 <p className="text-sm text-slate-400 font-bold">
-                  By signing up, you agree to our <span className="text-slate-900 hover:underline cursor-pointer">Terms of Service</span>
+                  By signing up, you agree to our{' '}
+                  <span className="text-slate-900 hover:underline cursor-pointer">Terms of Service</span>
                 </p>
               )}
             </div>
           </div>
         </div>
 
-        {/* Footer info */}
         <div className="absolute bottom-8 text-center w-full px-8 pointer-events-none opacity-40">
           <p className="text-[10px] font-black text-slate-900 uppercase tracking-[0.2em]">
             © 2024 SecurePay CH · Digital Asset Protection · Global Escrow
