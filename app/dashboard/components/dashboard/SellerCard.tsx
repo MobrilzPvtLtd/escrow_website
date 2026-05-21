@@ -1,5 +1,5 @@
 import { CheckCircle, Star } from 'lucide-react';
-import type { Seller } from '../../types';
+import type { Seller } from '@/types';
 
 interface SellerCardProps {
   seller: Seller;

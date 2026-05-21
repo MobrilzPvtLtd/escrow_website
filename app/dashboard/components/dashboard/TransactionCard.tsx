@@ -1,6 +1,6 @@
 import { ChevronRight } from 'lucide-react';
-import { StatusBadge } from '../../components/ui/StatusBadge';
-import type { Transaction } from '../../types';
+import { StatusBadge } from '@/components/ui/StatusBadge';
+import type { Transaction } from '@/types';
 
 interface TransactionCardProps {
   transaction: Transaction;

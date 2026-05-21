@@ -1,5 +1,5 @@
-import { getStatusDetails } from '../../lib/status';
-import type { TransactionStatus } from '../../types';
+import { getStatusDetails } from '@/lib/status';
+import type { TransactionStatus } from '@/types';
 
 interface StatusBadgeProps {
   status: TransactionStatus | string;

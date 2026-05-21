@@ -1,5 +1,5 @@
-import { StatusBadge } from '../../components/ui/StatusBadge';
-import type { Transaction } from '../../types';
+import { StatusBadge } from '@/components/ui/StatusBadge';
+import type { Transaction } from '@/types';
 
 interface SellerOrderCardProps {
   order: Transaction;

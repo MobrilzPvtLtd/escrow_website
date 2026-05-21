@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { X } from 'lucide-react';
-import { useTransaction } from '../../hooks/useTransaction';
-import type { TransactionForm } from '../../types';
+import { useTransaction } from '@/hooks/useTransaction';
+import type { TransactionForm } from '@/types';
 
 interface NewPurchaseModalProps {
   onClose: () => void;

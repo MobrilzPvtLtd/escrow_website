@@ -1,5 +1,5 @@
 import { Star, Wallet } from 'lucide-react';
-import type { DashboardStats, UserType } from '../../types';
+import type { DashboardStats, UserType } from '@/types';
 
 interface DashboardHeroProps {
   userType: UserType;

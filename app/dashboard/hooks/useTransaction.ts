@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { createTransaction, updateTransactionStatus, type CreateTransactionPayload } from '../lib/api';
+import { createTransaction, updateTransactionStatus, type CreateTransactionPayload } from '@/lib/api';
 
 export function useTransaction() {
   const [isLoading, setIsLoading] = useState(false);

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import type { DashboardStats, Seller, Transaction, Notification, UserType } from '../types';
+import type { DashboardStats, Seller, Transaction, Notification, UserType } from '@/types';
 import {
   fetchStats,
   fetchSellers,

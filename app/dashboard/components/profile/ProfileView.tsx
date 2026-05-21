@@ -5,7 +5,7 @@ import {
   ArrowLeft, User, Edit, Mail, Phone, MapPin,
   Lock, Bell, LogOut, ChevronRight,
 } from 'lucide-react';
-import type { UserType, ProfileData } from '../../types';
+import type { UserType, ProfileData } from '@/types';
 
 interface ProfileViewProps {
   userType: UserType;

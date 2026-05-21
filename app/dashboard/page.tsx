@@ -3,19 +3,19 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { useDashboard } from './hooks/useDashboard';
-import { signOut } from './lib/api';
+import { useDashboard } from '@/hooks/useDashboard';
+import { signOut } from '@/lib/api';
 
-import { TopNav } from './components/dashboard/TopNav';
-import { DashboardHero } from './components/dashboard/DashboardHero';
-import { SellerCard } from './components/dashboard/SellerCard';
-import { TransactionCard } from './components/dashboard/TransactionCard';
-import { SellerOrderCard } from './components/dashboard/SellerOrderCard';
-import { NewPurchaseModal } from './components/modals/NewPurchaseModal';
-import { TransactionDetailView } from './components/transactions/TransactionDetailView';
-import { ProfileView } from './components/profile/ProfileView';
+import { TopNav } from '@/components/dashboard/TopNav';
+import { DashboardHero } from '@/components/dashboard/DashboardHero';
+import { SellerCard } from '@/components/dashboard/SellerCard';
+import { TransactionCard } from '@/components/dashboard/TransactionCard';
+import { SellerOrderCard } from '@/components/dashboard/SellerOrderCard';
+import { NewPurchaseModal } from '@/components/modals/NewPurchaseModal';
+import { TransactionDetailView } from '@/components/transactions/TransactionDetailView';
+import { ProfileView } from '@/components/profile/ProfileView';
 
-import type { View, ActiveTab, Transaction } from './types';
+import type { View, ActiveTab, Transaction } from '@/types';
 
 export default function DashboardPage() {
   const router = useRouter();

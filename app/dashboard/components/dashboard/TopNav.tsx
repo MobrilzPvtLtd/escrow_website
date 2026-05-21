@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { Bell, User, LogOut, Plus } from 'lucide-react';
-import type { UserType, View } from '../../types';
+import type { UserType, View } from '@/types';
 
 interface TopNavProps {
   userType: UserType;

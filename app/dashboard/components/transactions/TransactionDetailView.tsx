@@ -1,10 +1,10 @@
 'use client';
 
 import { ArrowLeft, Check, Clock, Truck, CheckCircle, ShieldCheck } from 'lucide-react';
-import { StatusBadge } from '../../components/ui/StatusBadge';
-import { STATUS_STEPS } from '../../lib/status';
-import { useTransaction } from '../../hooks/useTransaction';
-import type { Transaction, UserType } from '../../types';
+import { StatusBadge } from '@/components/ui/StatusBadge';
+import { STATUS_STEPS } from '@/lib/status';
+import { useTransaction } from '@/hooks/useTransaction';
+import type { Transaction, UserType } from '@/types';
 
 interface TransactionDetailViewProps {
   transaction: Transaction;
