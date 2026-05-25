@@ -11,7 +11,6 @@ function authHeaders(token: string) {
   };
 }
 
-// ─── Auth ────────────────────────────────────────────────────────────────────
 
 export async function signOut() {
   if (typeof window !== 'undefined') {
