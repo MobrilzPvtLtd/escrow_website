@@ -7,7 +7,7 @@ const BASE_URL =
 function authHeaders(token: string) {
   return {
     'Content-Type': 'application/json',
-    Authorization: `Bearer ${token}`,
+    Authorization: token,
   };
 }
 
@@ -20,8 +20,6 @@ export async function signOut() {
     localStorage.removeItem('userName');
   }
 }
-
-// ─── Dashboard ───────────────────────────────────────────────────────────────
 
 export async function fetchStats(token: string): Promise<DashboardStats> {
   const res = await fetch(`${BASE_URL}/dashboard/stats`, {
@@ -48,16 +46,36 @@ export async function fetchTransactions(token: string): Promise<Transaction[]> {
   return data.transactions as Transaction[];
 }
 
-export async function fetchNotifications(token: string): Promise<Notification[]> {
-  const res = await fetch(`${BASE_URL}/transactions/notifications`, {
-    headers: authHeaders(token),
-  });
-  const data = await res.json();
-  if (!data.success) throw new Error('Failed to fetch notifications');
-  return data.notifications as Notification[];
-}
 
-// ─── Transactions ─────────────────────────────────────────────────────────────
+export async function fetchNotifications(
+  token: string
+): Promise<Notification[]> {
+  const res = await fetch(
+    `${BASE_URL}/transactions/notifications`,
+    {
+      method: 'GET',
+      headers: authHeaders(token),
+    }
+  );
+
+  console.log('Notification Status:', res.status);
+
+  const data = await res.json();
+
+  console.log('Notification Response:', data);
+
+  if (!res.ok) {
+    throw new Error(
+      data?.message || 'Failed to fetch notifications'
+    );
+  }
+
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  return data.notifications || [];
+}
 
 export interface CreateTransactionPayload {
   title: string;

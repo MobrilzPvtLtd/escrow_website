@@ -5,6 +5,7 @@ import type { UserType, View } from '@/types';
 interface TopNavProps {
   userType: UserType;
   currentView: View;
+  onToogleNotification: () => void;
   onToggleProfile: () => void;
   onSignOut: () => void;
   onNewPurchase: () => void;
@@ -13,6 +14,7 @@ interface TopNavProps {
 export function TopNav({
   userType,
   currentView,
+  onToogleNotification,
   onToggleProfile,
   onSignOut,
   onNewPurchase,
@@ -41,7 +43,8 @@ export function TopNav({
 
         {/* Actions */}
         <div className="flex items-center gap-4">
-          <button className="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors">
+          <button onClick={onToogleNotification}
+          className="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors">
             <Bell className="w-5 h-5 text-gray-600" />
           </button>
 

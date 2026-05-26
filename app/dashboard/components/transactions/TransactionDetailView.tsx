@@ -28,7 +28,7 @@ export function TransactionDetailView({
       await updateStatus(transaction.id, newStatus);
       onUpdate();
     } catch {
-      // errors handled in hook
+      
     }
   };
 

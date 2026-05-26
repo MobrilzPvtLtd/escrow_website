@@ -1,5 +1,5 @@
 export type UserType = 'buyer' | 'seller';
-export type View = 'dashboard' | 'profile' | 'transaction-detail';
+export type View = 'dashboard' | 'profile' | 'transaction-detail' | 'notifications';
 export type ActiveTab = 'sellers' | 'transactions';
 
 export interface TransactionForm {
