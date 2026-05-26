@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Shield, Lock, CreditCard, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
 
 interface FormData {
   fullName: string;
@@ -473,9 +474,9 @@ export default function AuthScreen() {
               ) : (
                 <p className="text-sm text-slate-400 font-bold">
                   By signing up, you agree to our{' '}
-                  <span className="text-slate-900 hover:underline cursor-pointer">
+                  <Link href="/terms" className="text-slate-900 hover:underline">
                     Terms of Service
-                  </span>
+                  </Link>
                 </p>
               )}
             </div>
