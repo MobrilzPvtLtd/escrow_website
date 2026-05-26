@@ -84,6 +84,7 @@ export default function DashboardPage() {
             userType={dashboard.userType}
             userEmail={dashboard.userEmail}
             trustScore={dashboard.stats.trustScore}
+            profile={dashboard.profile}
             onBack={() => setCurrentView('dashboard')}
           />
         )}

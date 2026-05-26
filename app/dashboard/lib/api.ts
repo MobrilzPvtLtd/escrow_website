@@ -1,4 +1,4 @@
-import type { DashboardStats, Seller, Transaction, Notification } from '@/types';
+import type { DashboardStats, Seller, Transaction, Notification, SellerProfile, BuyerProfile } from '@/types';
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -25,14 +25,20 @@ export async function fetchStats(token: string): Promise<DashboardStats> {
   const res = await fetch(`${BASE_URL}/dashboard/stats`, {
     headers: authHeaders(token),
   });
+  console.log('Stats Response Status:', res.status);
   const data = await res.json();
+  console.log('Stats Response Data:', data);
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch stats`);
   if (!data.success) throw new Error('Failed to fetch stats');
   return data.stats as DashboardStats;
 }
 
 export async function fetchSellers(): Promise<Seller[]> {
   const res = await fetch(`${BASE_URL}/dashboard/sellers`);
+  console.log('Sellers Response Status:', res.status);
   const data = await res.json();
+  console.log('Sellers Response Data:', data);
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch sellers`);
   if (!data.success) throw new Error('Failed to fetch sellers');
   return data.sellers as Seller[];
 }
@@ -41,9 +47,36 @@ export async function fetchTransactions(token: string): Promise<Transaction[]> {
   const res = await fetch(`${BASE_URL}/dashboard/transactions`, {
     headers: authHeaders(token),
   });
+  console.log('Transactions Response Status:', res.status);
   const data = await res.json();
+  console.log('Transactions Response Data:', data);
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch transactions`);
   if (!data.success) throw new Error('Failed to fetch transactions');
   return data.transactions as Transaction[];
+}
+
+export async function fetchSellerProfile(token: string): Promise<SellerProfile>{
+  const res = await fetch(`${BASE_URL}/profile`, {
+    headers: authHeaders(token),
+  });
+  console.log('Seller Profile Response Status:', res.status);
+  const data = await res.json();
+  console.log('Seller Profile Response Data:', data);
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch seller profile`);
+  if(!data.success) throw new Error('Failed to fetch seller profile');
+  return data as SellerProfile;
+}
+
+export async function fetchBuyerProfile(token: string): Promise<BuyerProfile>{
+  const res = await fetch(`${BASE_URL}/profile`, {
+    headers: authHeaders(token),
+  });
+  console.log('Buyer Profile Response Status:', res.status);
+  const data = await res.json();
+  console.log('Buyer Profile Response Data:', data);
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch buyer profile`);
+  if(!data.success) throw new Error('Failed to fetch buyer profile');
+  return data as BuyerProfile;
 }
 
 
@@ -58,15 +91,17 @@ export async function fetchNotifications(
     }
   );
 
-  console.log('Notification Status:', res.status);
+  console.log('Notifications Status:', res.status);
 
   const data = await res.json();
 
-  console.log('Notification Response:', data);
+  console.log('Notifications Response:', data);
+  console.log('Token used:', token.substring(0, 20) + '...');
 
   if (!res.ok) {
+    console.error('Notifications Error:', data);
     throw new Error(
-      data?.message || 'Failed to fetch notifications'
+      data?.message || `HTTP ${res.status}: Failed to fetch notifications`
     );
   }
 

@@ -27,6 +27,37 @@ export interface Transaction {
   timeline?: TimelineStep[];
 }
 
+export interface SellerProfile {
+  succes : boolean;
+  profile: {
+    id: number;
+    name: string; 
+    email: string; 
+    role: string;
+    sellerProfile: {
+      id: number; 
+      userId: number; 
+      businessName: string; 
+      description: string;
+      website: string;
+      rating: number;
+      logoUrl: string; 
+      isVerified: boolean;
+    };
+  }
+}
+
+export interface BuyerProfile {
+  succes : boolean;
+  profile: {
+    id: number;
+    name: string; 
+    email: string; 
+    role: string;
+    sellerProfile: null;
+  }
+}
+
 export type TransactionStatus = 'BLOCKED' | 'SHIPPED' | 'RECEIVED' | 'RELEASED' | 'REFUNDED';
 
 export interface Seller {

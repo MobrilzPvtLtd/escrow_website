@@ -11,9 +11,6 @@ const NotificationsList = ({ notifications, onBack }: NotificationListProps) => 
 
   return (
     <div className="min-h-screen bg-gray-50 pb-12">
-      {/* 1. Header (Consistent with your current UI) */}
-
-      {/* 2. Main Content Area */}
       <div className="max-w-4xl mx-auto mt-8 px-4">
         
         {/* Back Button */}
