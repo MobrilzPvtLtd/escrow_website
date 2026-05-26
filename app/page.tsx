@@ -383,11 +383,10 @@ export default function AuthScreen() {
                     setIsLogin(mode === 'login');
                     setError('');
                   }}
-                  className={`flex-1 py-3 text-sm font-black rounded-xl transition-all duration-300 ${
-                    (mode === 'login') === isLogin
+                  className={`flex-1 py-3 text-sm font-black rounded-xl transition-all duration-300 ${(mode === 'login') === isLogin
                       ? 'bg-white text-slate-900 shadow-xl'
                       : 'text-slate-400 hover:text-slate-600'
-                  }`}
+                    }`}
                 >
                   {mode === 'login' ? 'Log In' : 'Sign Up'}
                 </button>
@@ -406,11 +405,10 @@ export default function AuthScreen() {
                 {(['buyer', 'seller'] as const).map((type) => (
                   <label
                     key={type}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 cursor-pointer rounded-xl transition-all border ${
-                      accountType === type
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 cursor-pointer rounded-xl transition-all border ${accountType === type
                         ? 'bg-white border-slate-200 shadow-sm'
                         : 'border-transparent'
-                    }`}
+                      }`}
                   >
                     <input
                       type="radio"
@@ -422,11 +420,10 @@ export default function AuthScreen() {
                     />
 
                     <span
-                      className={`text-sm font-black capitalize ${
-                        accountType === type
+                      className={`text-sm font-black capitalize ${accountType === type
                           ? 'text-slate-900'
                           : 'text-slate-400'
-                      }`}
+                        }`}
                     >
                       {type} Account
                     </span>
@@ -520,8 +517,8 @@ export default function AuthScreen() {
                 {isLoading
                   ? 'Processing…'
                   : isLogin
-                  ? 'Sign In'
-                  : 'Create Account'}
+                    ? 'Sign In'
+                    : 'Create Account'}
 
                 <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
@@ -529,12 +526,17 @@ export default function AuthScreen() {
 
             <div className="text-center">
               {isLogin ? (
-                <button
-                  type="button"
-                  className="text-sm text-slate-400 font-bold hover:text-slate-900 transition-colors"
+                <Link
+                  href="/forgot-password"
+                  className="text-sm text-slate-400 font-bold hover:text-slate-900 transition-colors inline-flex items-center gap-1"
                 >
-                  Forgot your password?
-                </button>
+                  <button
+                    type="button"
+                    className="cursor-pointer text-sm text-slate-400 font-bold hover:text-slate-900 transition-colors"
+                  >
+                    Forgot your password?
+                  </button>
+                </Link>
               ) : (
                 <p className="text-sm text-slate-400 font-bold">
                   By signing up, you agree to our{' '}
