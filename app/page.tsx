@@ -69,35 +69,6 @@ export default function AuthScreen() {
       [field]: value,
     }));
 
-  // const persistSession = (
-  //   data: any,
-  //   fallbackEmail: string,
-  //   fallbackName: string,
-  //   fallbackRole: string
-  // ) => {
-  //   if (typeof window === 'undefined') return;
-
-  //   if (data.token) {
-  //     localStorage.setItem('token', data.token);
-  //   }
-
-  //   localStorage.setItem(
-  //     'userType',
-  //     data.user?.role || fallbackRole
-  //   );
-
-  //   localStorage.setItem(
-  //     'userEmail',
-  //     data.user?.email || fallbackEmail
-  //   );
-
-  //   localStorage.setItem(
-  //     'userName',
-  //     data.user?.name || fallbackName
-  //   );
-  // };
-
-
   const persistSession = (
     data: any,
     fallbackEmail: string,
@@ -170,18 +141,6 @@ export default function AuthScreen() {
           throw new Error(data.message || 'Registration failed');
         }
 
-        // const token = res.headers.get('authorization');
-
-        // persistSession(
-        //   {
-        //     ...data,
-        //     token,
-        //   },
-        //   formData.email,
-        //   formData.fullName,
-        //   accountType
-        // );
-
         const token = res.headers.get('authorization');
         const refreshToken = res.headers.get('refreshtoken');
 
@@ -217,18 +176,6 @@ export default function AuthScreen() {
         if (!res.ok) {
           throw new Error(data.message || 'Login failed');
         }
-
-        // const token = res.headers.get('authorization');
-
-        // persistSession(
-        //   {
-        //     ...data,
-        //     token,
-        //   },
-        //   formData.email,
-        //   formData.fullName,
-        //   accountType
-        // );
 
         const token = res.headers.get('authorization');
         const refreshToken = res.headers.get('refreshtoken');
@@ -384,8 +331,8 @@ export default function AuthScreen() {
                     setError('');
                   }}
                   className={`flex-1 py-3 text-sm font-black rounded-xl transition-all duration-300 ${(mode === 'login') === isLogin
-                      ? 'bg-white text-slate-900 shadow-xl'
-                      : 'text-slate-400 hover:text-slate-600'
+                    ? 'bg-white text-slate-900 shadow-xl cursor-pointer'
+                    : 'text-slate-400 hover:text-slate-600 cursor-pointer'
                     }`}
                 >
                   {mode === 'login' ? 'Log In' : 'Sign Up'}
@@ -400,36 +347,38 @@ export default function AuthScreen() {
                 </div>
               )}
 
-              {/* ACCOUNT TYPE */}
-              <div className="flex gap-3 p-1.5 bg-slate-50 rounded-2xl border border-slate-100">
-                {(['buyer', 'seller'] as const).map((type) => (
-                  <label
-                    key={type}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 cursor-pointer rounded-xl transition-all border ${accountType === type
+              {/* ACCOUNT TYPE - HIDDEN DURING LOGIN */}
+              {!isLogin && (
+                <div className="flex gap-3 p-1.5 bg-slate-50 rounded-2xl border border-slate-100">
+                  {(['buyer', 'seller'] as const).map((type) => (
+                    <label
+                      key={type}
+                      className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 cursor-pointer rounded-xl transition-all border ${accountType === type
                         ? 'bg-white border-slate-200 shadow-sm'
                         : 'border-transparent'
-                      }`}
-                  >
-                    <input
-                      type="radio"
-                      name="accountType"
-                      value={type}
-                      checked={accountType === type}
-                      onChange={() => setAccountType(type)}
-                      className="sr-only"
-                    />
-
-                    <span
-                      className={`text-sm font-black capitalize ${accountType === type
-                          ? 'text-slate-900'
-                          : 'text-slate-400'
                         }`}
                     >
-                      {type} Account
-                    </span>
-                  </label>
-                ))}
-              </div>
+                      <input
+                        type="radio"
+                        name="accountType"
+                        value={type}
+                        checked={accountType === type}
+                        onChange={() => setAccountType(type)}
+                        className="sr-only"
+                      />
+
+                      <span
+                        className={`text-sm font-black capitalize ${accountType === type
+                          ? 'text-slate-900'
+                          : 'text-slate-400'
+                          }`}
+                      >
+                        {type} Account
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              )}
 
               <div className="space-y-5">
                 {/* FULL NAME */}
@@ -530,12 +479,7 @@ export default function AuthScreen() {
                   href="/forgot-password"
                   className="text-sm text-slate-400 font-bold hover:text-slate-900 transition-colors inline-flex items-center gap-1"
                 >
-                  <button
-                    type="button"
-                    className="cursor-pointer text-sm text-slate-400 font-bold hover:text-slate-900 transition-colors"
-                  >
-                    Forgot your password?
-                  </button>
+                  Forgot your password?
                 </Link>
               ) : (
                 <p className="text-sm text-slate-400 font-bold">

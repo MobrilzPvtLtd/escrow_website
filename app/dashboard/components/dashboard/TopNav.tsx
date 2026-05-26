@@ -44,20 +44,20 @@ export function TopNav({
         {/* Actions */}
         <div className="flex items-center gap-4">
           <button onClick={onToogleNotification}
-          className="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors">
+          className="cursor-pointer w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors">
             <Bell className="w-5 h-5 text-gray-600" />
           </button>
 
           <button
             onClick={onToggleProfile}
-            className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center hover:bg-slate-800 transition-colors"
+            className="cursor-pointer w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center hover:bg-slate-800 transition-colors"
           >
             <User className="w-5 h-5 text-white" />
           </button>
 
           <button
             onClick={onSignOut}
-            className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-bold hover:bg-red-100 transition-colors border border-red-100"
+            className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-bold hover:bg-red-100 transition-colors border border-red-100"
           >
             <LogOut className="w-4 h-4" />
             Logout
@@ -66,7 +66,7 @@ export function TopNav({
           {userType === 'buyer' && currentView === 'dashboard' && (
             <button
               onClick={onNewPurchase}
-              className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-lg text-sm font-semibold hover:bg-slate-800 transition-colors"
+              className="cursor-pointer flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-lg text-sm font-semibold hover:bg-slate-800 transition-colors"
             >
               <Plus className="w-4 h-4" />
               New Purchase
