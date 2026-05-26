@@ -68,16 +68,52 @@ export default function AuthScreen() {
       [field]: value,
     }));
 
+  // const persistSession = (
+  //   data: any,
+  //   fallbackEmail: string,
+  //   fallbackName: string,
+  //   fallbackRole: string
+  // ) => {
+  //   if (typeof window === 'undefined') return;
+
+  //   if (data.token) {
+  //     localStorage.setItem('token', data.token);
+  //   }
+
+  //   localStorage.setItem(
+  //     'userType',
+  //     data.user?.role || fallbackRole
+  //   );
+
+  //   localStorage.setItem(
+  //     'userEmail',
+  //     data.user?.email || fallbackEmail
+  //   );
+
+  //   localStorage.setItem(
+  //     'userName',
+  //     data.user?.name || fallbackName
+  //   );
+  // };
+
+
   const persistSession = (
     data: any,
     fallbackEmail: string,
     fallbackName: string,
-    fallbackRole: string
+    fallbackRole: string,
+    refreshToken: string
   ) => {
     if (typeof window === 'undefined') return;
 
+    // Access Token
     if (data.token) {
       localStorage.setItem('token', data.token);
+    }
+
+    // Refresh Token
+    if (refreshToken) {
+      localStorage.setItem('refreshToken', refreshToken);
     }
 
     localStorage.setItem(
@@ -133,7 +169,20 @@ export default function AuthScreen() {
           throw new Error(data.message || 'Registration failed');
         }
 
+        // const token = res.headers.get('authorization');
+
+        // persistSession(
+        //   {
+        //     ...data,
+        //     token,
+        //   },
+        //   formData.email,
+        //   formData.fullName,
+        //   accountType
+        // );
+
         const token = res.headers.get('authorization');
+        const refreshToken = res.headers.get('refreshtoken');
 
         persistSession(
           {
@@ -142,7 +191,8 @@ export default function AuthScreen() {
           },
           formData.email,
           formData.fullName,
-          accountType
+          accountType,
+          refreshToken ?? ""
         );
 
         router.push('/dashboard');
@@ -167,7 +217,20 @@ export default function AuthScreen() {
           throw new Error(data.message || 'Login failed');
         }
 
+        // const token = res.headers.get('authorization');
+
+        // persistSession(
+        //   {
+        //     ...data,
+        //     token,
+        //   },
+        //   formData.email,
+        //   formData.fullName,
+        //   accountType
+        // );
+
         const token = res.headers.get('authorization');
+        const refreshToken = res.headers.get('refreshtoken');
 
         persistSession(
           {
@@ -176,7 +239,8 @@ export default function AuthScreen() {
           },
           formData.email,
           formData.fullName,
-          accountType
+          accountType,
+          refreshToken ?? ""
         );
 
         router.push('/dashboard');

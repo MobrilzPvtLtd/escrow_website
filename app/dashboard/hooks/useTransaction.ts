@@ -14,7 +14,7 @@ export function useTransaction() {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await createTransaction(token(), payload);
+      const result = await createTransaction(payload);
       return result;
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to create transaction';
@@ -29,7 +29,7 @@ export function useTransaction() {
     setIsLoading(true);
     setError(null);
     try {
-      await updateTransactionStatus(token(), transactionId, status);
+      await updateTransactionStatus(transactionId, status);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to update status';
       setError(msg);

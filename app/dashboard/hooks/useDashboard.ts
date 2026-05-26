@@ -64,8 +64,8 @@ export function useDashboard() {
       try {
         const profilePromise =
           userType === 'seller'
-            ? fetchSellerProfile(token)
-            : fetchBuyerProfile(token);
+            ? fetchSellerProfile()
+            : fetchBuyerProfile();
 
         const [
           stats,
@@ -74,10 +74,10 @@ export function useDashboard() {
           notifications,
           profile,
         ] = await Promise.allSettled([
-          fetchStats(token),
+          fetchStats(),
           fetchSellers(),
-          fetchTransactions(token),
-          fetchNotifications(token),
+          fetchTransactions(),
+          fetchNotifications(),
           profilePromise,
         ]);
 
