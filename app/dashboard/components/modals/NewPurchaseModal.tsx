@@ -1,42 +1,55 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useTransaction } from '@/hooks/useTransaction';
-import type { TransactionForm } from '@/types';
+import type { TransactionForm, Seller } from '@/types';
 
 interface NewPurchaseModalProps {
+  sellers: Seller[];
   onClose: () => void;
   onCreated: () => void;
 }
 
 const INITIAL_FORM: TransactionForm = {
-  sellerEmail: '',
+  sellerId: '',
   productName: '',
   productDescription: '',
   amount: '',
 };
 
-export function NewPurchaseModal({ onClose, onCreated }: NewPurchaseModalProps) {
+export function NewPurchaseModal({ sellers, onClose, onCreated }: NewPurchaseModalProps) {
   const [form, setForm] = useState<TransactionForm>(INITIAL_FORM);
   const { isLoading, create } = useTransaction();
 
   const handleChange = (field: keyof TransactionForm, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
 
+  useEffect(() => {
+    if (!form.sellerId && sellers.length > 0) {
+      const defaultUserId = sellers[0].userId ?? sellers[0].id;
+      setForm((prev) => ({ ...prev, sellerId: defaultUserId.toString() }));
+    }
+  }, [sellers, form.sellerId]);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!form.sellerId) {
+      return;
+    }
+
     try {
       await create({
         title: form.productName,
         description: form.productDescription,
         amount: parseFloat(form.amount),
-        sellerId: 1, // TODO: resolve seller by email via API
+        sellerId: Number(form.sellerId),
       });
       onCreated();
       onClose();
     } catch {
-      // error shown via hook
+
     }
   };
 
@@ -60,16 +73,26 @@ export function NewPurchaseModal({ onClose, onCreated }: NewPurchaseModalProps) 
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <Field label="Seller Email">
-            <input
-              type="email"
-              value={form.sellerEmail}
-              onChange={(e) => handleChange('sellerEmail', e.target.value)}
-              placeholder="seller@example.com"
-              className={inputCls}
-              required
-            />
-          </Field>
+          <Field label="Seller">
+          <select
+            value={form.sellerId}
+            onChange={(e) => handleChange('sellerId', e.target.value)}
+            className={inputCls}
+            required
+          >
+            <option value="" disabled>
+              {sellers.length > 0 ? 'Select a seller' : 'No sellers available'}
+            </option>
+            {sellers.map((seller) => {
+              const value = (seller.userId ?? seller.id).toString();
+              return (
+                <option key={seller.id} value={value}>
+                  {seller.businessName || `Seller #${seller.id}`}
+                </option>
+              );
+            })}
+          </select>
+        </Field>
 
           <Field label="Product Name">
             <input

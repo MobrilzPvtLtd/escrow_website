@@ -18,9 +18,6 @@ function authHeaders(token: string) {
   };
 }
 
-/**
- * Refresh Access Token
- */
 async function refreshAccessToken(): Promise<string | null> {
   try {
     const refreshToken =
@@ -59,9 +56,6 @@ async function refreshAccessToken(): Promise<string | null> {
       return null;
     }
 
-    /**
-     * Get new tokens from response headers
-     */
     const newAccessToken = res.headers.get('authorization');
     const newRefreshToken = res.headers.get('refreshtoken');
 
@@ -90,9 +84,6 @@ async function refreshAccessToken(): Promise<string | null> {
   }
 }
 
-/**
- * Common API Fetch Wrapper
- */
 async function apiFetch(
   url: string,
   options: RequestInit = {},
@@ -111,9 +102,7 @@ async function apiFetch(
     },
   });
 
-  /**
-   * If token expired
-   */
+
   if (res.status === 401 && retry) {
     console.log('Token expired. Refreshing token...');
 
@@ -123,9 +112,6 @@ async function apiFetch(
       throw new Error('Session expired. Please login again.');
     }
 
-    /**
-     * Retry original request with new token
-     */
     res = await fetch(url, {
       ...options,
       headers: {

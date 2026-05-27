@@ -19,7 +19,7 @@ import { NewPurchaseModal } from '@/components/modals/NewPurchaseModal';
 import { TransactionDetailView } from '@/components/transactions/TransactionDetailView';
 import { ProfileView } from '@/components/profile/ProfileView';
 
-import type { View, ActiveTab, Transaction } from '@/types';
+import type { View, ActiveTab, Transaction, Seller } from '@/types';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -178,6 +178,7 @@ export default function DashboardPage() {
       {/* New Purchase Modal */}
       {showNewPurchaseModal && (
         <NewPurchaseModal
+          sellers={dashboard.sellers}
           onClose={() => setShowNewPurchaseModal(false)}
           onCreated={dashboard.refresh}
         />

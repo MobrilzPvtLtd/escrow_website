@@ -3,7 +3,7 @@ export type View = 'dashboard' | 'profile' | 'transaction-detail' | 'notificatio
 export type ActiveTab = 'sellers' | 'transactions';
 
 export interface TransactionForm {
-  sellerEmail: string;
+  sellerId: string;
   productName: string;
   productDescription: string;
   amount: string;
@@ -62,6 +62,7 @@ export type TransactionStatus = 'BLOCKED' | 'SHIPPED' | 'RECEIVED' | 'RELEASED' 
 
 export interface Seller {
   id: number;
+  userId?: number;
   businessName: string;
   website?: string;
   domain?: string;
