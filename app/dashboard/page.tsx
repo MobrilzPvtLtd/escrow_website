@@ -92,6 +92,7 @@ export default function DashboardPage() {
             trustScore={dashboard.stats.trustScore}
             profile={dashboard.profile}
             onBack={() => setCurrentView('dashboard')}
+            onRefresh={dashboard.refresh}
           />
         )}
 

@@ -22,6 +22,8 @@ import {
   Star,
 } from 'lucide-react';
 
+import { EditProfileModal } from '@/components/modals/EditProfileModal';
+
 import type {
   UserType,
   ProfileData,
@@ -34,6 +36,7 @@ interface ProfileViewProps {
   userEmail: string;
   trustScore: number;
   onBack: () => void;
+  onRefresh?: () => void;
   profile: SellerProfile | BuyerProfile | null;
 }
 
@@ -42,9 +45,11 @@ export function ProfileView({
   userEmail,
   trustScore,
   onBack,
+  onRefresh,
   profile,
 }: ProfileViewProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const isSeller =
     userType === 'seller' &&
@@ -74,13 +79,23 @@ export function ProfileView({
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <button
-        onClick={onBack}
-        className="cursor-pointer flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-900 hover:bg-slate-50 transition-all shadow-sm group"
-      >
-        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-        Back to Dashboard
-      </button>
+      <div className="flex items-center justify-between">
+        <button
+          onClick={onBack}
+          className="cursor-pointer flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-900 hover:bg-slate-50 transition-all shadow-sm group"
+        >
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          Back to Dashboard
+        </button>
+
+        <button
+          onClick={() => setShowEditModal(true)}
+          className="cursor-pointer flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white border border-slate-900 rounded-2xl text-sm font-bold hover:bg-slate-800 transition-all shadow-md group"
+        >
+          <Edit className="w-4 h-4" />
+          Edit Profile
+        </button>
+      </div>
 
       {/* Hero */}
       <div className="bg-white rounded-[32px] p-10 border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden">
@@ -280,6 +295,21 @@ export function ProfileView({
           </div>
         </div>
       </div>
+
+      {/* Edit Profile Modal */}
+      {showEditModal && (
+        <EditProfileModal
+          userType={userType}
+          name={profileData.name}
+          businessName={sellerProfile?.businessName}
+          website={sellerProfile?.website}
+          onClose={() => setShowEditModal(false)}
+          onSaved={() => {
+            onRefresh?.();
+            setShowEditModal(false);
+          }}
+        />
+      )}
     </div>
   );
 }

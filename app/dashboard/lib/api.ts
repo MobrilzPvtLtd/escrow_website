@@ -50,7 +50,7 @@ async function refreshAccessToken(): Promise<string | null> {
       await signOut();
 
       if (typeof window !== 'undefined') {
-        window.location.href = '/login';
+        window.location.href = '/';
       }
 
       return null;
@@ -77,7 +77,7 @@ async function refreshAccessToken(): Promise<string | null> {
     await signOut();
 
     if (typeof window !== 'undefined') {
-      window.location.href = '/login';
+      window.location.href = '/';
     }
 
     return null;
@@ -298,4 +298,29 @@ export async function updateTransactionStatus(
   if (!res.ok) {
     throw new Error('Failed to update transaction status');
   }
+}
+
+export interface UpdateProfilePayload {
+  name: string;
+  businessName?: string;
+  website?: string;
+}
+
+export async function updateProfile(
+  payload: UpdateProfilePayload
+): Promise<{ success: boolean; message: string }> {
+  const res = await apiFetch(
+    `${BASE_URL}/update-profile`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error('Failed to update profile');
+  }
+
+  const data = await res.json();
+  return data;
 }
