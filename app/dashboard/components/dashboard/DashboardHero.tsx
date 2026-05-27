@@ -5,9 +5,10 @@ interface DashboardHeroProps {
   userType: UserType;
   userName: string;
   stats: DashboardStats;
+  totalReceived?: number;
 }
 
-export function DashboardHero({ userType, userName, stats }: DashboardHeroProps) {
+export function DashboardHero({ userType, userName, stats, totalReceived = 0 }: DashboardHeroProps) {
   return (
     <section className="bg-slate-900 px-8 py-16 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] -mr-48 -mt-48" />
@@ -47,7 +48,9 @@ export function DashboardHero({ userType, userName, stats }: DashboardHeroProps)
                   <Wallet className="w-4 h-4" />
                   Total Amount Received
                 </p>
-                <p className="text-4xl font-black text-white leading-none tracking-tight">$0.00</p>
+                <p className="text-4xl font-black text-white leading-none tracking-tight">
+                  ${totalReceived.toFixed(2)}
+                </p>
                 <p className="text-blue-400/60 text-[10px] font-black uppercase tracking-widest mt-4">
                   Swiss Standard Verified
                 </p>

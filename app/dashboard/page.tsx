@@ -58,6 +58,11 @@ export default function DashboardPage() {
     );
   };
 
+  const totalReceived = dashboard.transactions.reduce(
+    (sum, tx) => (tx.status === 'RELEASED' ? sum + tx.amount : sum),
+    0
+  );
+
   return (
     <div className="min-h-screen bg-gray-50">
       <TopNav
@@ -74,6 +79,7 @@ export default function DashboardPage() {
           userType={dashboard.userType}
           userName={dashboard.userName}
           stats={dashboard.stats}
+          totalReceived={totalReceived}
         />
       )}
 
