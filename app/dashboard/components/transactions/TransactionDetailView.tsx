@@ -124,7 +124,7 @@ export function TransactionDetailView({
               onClick={() => handleUpdate('RECEIVED')}
               disabled={isLoading}
               icon={<CheckCircle className="w-5 h-5" />}
-              label="Confirm Receipt"
+              label="Recieved Product"
             />
           )}
           {userType === 'buyer' && transaction.status === 'RECEIVED' && (
