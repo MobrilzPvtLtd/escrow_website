@@ -124,11 +124,10 @@ export default function DashboardPage() {
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`flex-1 py-3 px-6 rounded-xl font-semibold text-sm transition-all ${
-                      activeTab === tab
+                    className={`cursor-pointer flex-1 py-3 px-6 rounded-xl font-semibold text-sm transition-all ${activeTab === tab
                         ? 'bg-slate-900 text-white shadow-md'
                         : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300'
-                    }`}
+                      }`}
                   >
                     {tab === 'sellers'
                       ? 'Verified Sellers'
