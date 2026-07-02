@@ -12,6 +12,11 @@ interface FormData {
   password: string;
   businessName: string;
   website: string;
+  bankName: string;
+  accountNumber: string;
+  ifscCode: string;
+  branchName: string;
+  businessIdDocument: File | null;
 }
 
 const INITIAL_FORM: FormData = {
@@ -20,6 +25,11 @@ const INITIAL_FORM: FormData = {
   password: '',
   businessName: '',
   website: '',
+  bankName: '',
+  accountNumber: '',
+  ifscCode: '',
+  branchName: '',
+  businessIdDocument: null,
 };
 
 const inputCls =
@@ -63,14 +73,35 @@ export default function AuthScreen() {
     }
   }, [router]);
 
-  const handleChange = (field: keyof FormData, value: string) =>
+  const handleChange = (field: keyof FormData, value: string | File | null) =>
     setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    handleChange('businessIdDocument', file);
+  };
+
+  const fileToBase64 = (file: File) =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsDataURL(file);
+    });
+
   const persistSession = (
-    data: any,
+    data: {
+      token?: string;
+      refreshToken?: string;
+      user?: {
+        role?: string;
+        email?: string;
+        name?: string;
+      };
+    },
     fallbackEmail: string,
     fallbackName: string,
     fallbackRole: string,
@@ -125,6 +156,13 @@ export default function AuthScreen() {
         if (accountType === 'seller') {
           payload.businessName = formData.businessName;
           payload.website = formData.website;
+          payload.bankName = formData.bankName;
+          payload.accountNumber = formData.accountNumber;
+          payload.ifscCode = formData.ifscCode;
+          payload.branchName = formData.branchName;
+          payload.businessIdDocument = formData.businessIdDocument
+            ? await fileToBase64(formData.businessIdDocument)
+            : '';
         }
 
         const res = await fetch(`${API_URL}/register`, {
@@ -193,8 +231,8 @@ export default function AuthScreen() {
 
         router.push('/dashboard');
       }
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setIsLoading(false);
     }
@@ -397,6 +435,34 @@ export default function AuthScreen() {
                   </Field>
                 )}
 
+                {/* EMAIL */}
+                <Field label="Email Address">
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) =>
+                      handleChange('email', e.target.value)
+                    }
+                    placeholder="name@example.com"
+                    className={inputCls}
+                    required
+                  />
+                </Field>
+
+                {/* PASSWORD */}
+                <Field label="Password">
+                  <input
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) =>
+                      handleChange('password', e.target.value)
+                    }
+                    placeholder="••••••••"
+                    className={inputCls}
+                    required
+                  />
+                </Field>
+
                 {/* SELLER FIELDS */}
                 {!isLogin && isSeller && (
                   <>
@@ -425,36 +491,69 @@ export default function AuthScreen() {
                         required
                       />
                     </Field>
+
+                    <Field label="Business ID Document">
+                      <input
+                        type="file"
+                        accept="image/*,.pdf"
+                        onChange={handleFileChange}
+                        className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 file:mr-4 file:rounded-full file:border-0 file:bg-slate-900 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-slate-800"
+                        required
+                      />
+                      {formData.businessIdDocument && (
+                        <p className="text-xs text-slate-500">
+                          Selected file: {formData.businessIdDocument.name}
+                        </p>
+                      )}
+                    </Field>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <Field label="Bank Name">
+                        <input
+                          type="text"
+                          value={formData.bankName}
+                          onChange={(e) => handleChange('bankName', e.target.value)}
+                          placeholder="e.g. State Bank of India"
+                          className={inputCls}
+                          required
+                        />
+                      </Field>
+
+                      <Field label="Account Number">
+                        <input
+                          type="text"
+                          value={formData.accountNumber}
+                          onChange={(e) => handleChange('accountNumber', e.target.value)}
+                          placeholder="Enter account number"
+                          className={inputCls}
+                          required
+                        />
+                      </Field>
+
+                      <Field label="IFSC Code">
+                        <input
+                          type="text"
+                          value={formData.ifscCode}
+                          onChange={(e) => handleChange('ifscCode', e.target.value)}
+                          placeholder="e.g. SBIN0001234"
+                          className={inputCls}
+                          required
+                        />
+                      </Field>
+
+                      <Field label="Branch Name">
+                        <input
+                          type="text"
+                          value={formData.branchName}
+                          onChange={(e) => handleChange('branchName', e.target.value)}
+                          placeholder="e.g. Main Branch"
+                          className={inputCls}
+                          required
+                        />
+                      </Field>
+                    </div>
                   </>
                 )}
-
-                {/* EMAIL */}
-                <Field label="Email Address">
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) =>
-                      handleChange('email', e.target.value)
-                    }
-                    placeholder="name@example.com"
-                    className={inputCls}
-                    required
-                  />
-                </Field>
-
-                {/* PASSWORD */}
-                <Field label="Password">
-                  <input
-                    type="password"
-                    value={formData.password}
-                    onChange={(e) =>
-                      handleChange('password', e.target.value)
-                    }
-                    placeholder="••••••••"
-                    className={inputCls}
-                    required
-                  />
-                </Field>
               </div>
 
               {/* SUBMIT */}
