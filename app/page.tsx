@@ -86,14 +86,6 @@ export default function AuthScreen() {
     handleChange('businessIdDocument', file);
   };
 
-  const fileToBase64 = (file: File) =>
-    new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = () => reject(new Error('Failed to read file'));
-      reader.readAsDataURL(file);
-    });
-
   const persistSession = (
     data: {
       token?: string;
@@ -148,34 +140,48 @@ export default function AuthScreen() {
     try {
       // REGISTER
       if (!isLogin) {
-        const payload: Record<string, string> = {
-          name: formData.fullName,
-          email: formData.email,
-          password: formData.password,
-          role: accountType,
-        };
+        let res: Response;
+        let data: any;
 
         if (accountType === 'seller') {
-          payload.businessName = formData.businessName;
-          payload.website = formData.website;
-          payload.bankName = formData.bankName;
-          payload.accountNumber = formData.accountNumber;
-          payload.ifscCode = formData.ifscCode;
-          payload.branchName = formData.branchName;
-          payload.businessIdDocument = formData.businessIdDocument
-            ? await fileToBase64(formData.businessIdDocument)
-            : '';
+          const formDataToSend = new FormData();
+          formDataToSend.append('name', formData.fullName);
+          formDataToSend.append('email', formData.email);
+          formDataToSend.append('password', formData.password);
+          formDataToSend.append('role', accountType);
+          formDataToSend.append('businessName', formData.businessName);
+          formDataToSend.append('website', formData.website);
+          formDataToSend.append('bankName', formData.bankName);
+          formDataToSend.append('accountNumber', formData.accountNumber);
+          formDataToSend.append('ifscCode', formData.ifscCode);
+          formDataToSend.append('branchName', formData.branchName);
+
+          if (formData.businessIdDocument) {
+            formDataToSend.append('businessIdDoc', formData.businessIdDocument);
+          }
+
+          res = await fetch(`${API_URL}/register`, {
+            method: 'POST',
+            body: formDataToSend,
+          });
+        } else {
+          const payload: Record<string, string> = {
+            name: formData.fullName,
+            email: formData.email,
+            password: formData.password,
+            role: accountType,
+          };
+
+          res = await fetch(`${API_URL}/register`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+          });
         }
 
-        const res = await fetch(`${API_URL}/register`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
-        });
-
-        const data = await res.json();
+        data = await res.json();
 
         if (!res.ok) {
           throw new Error(data.message || 'Registration failed');
