@@ -28,7 +28,7 @@ export function TransactionDetailView({
       await updateStatus(transaction.id, newStatus);
       onUpdate();
     } catch {
-      
+
     }
   };
 
@@ -72,14 +72,13 @@ export function TransactionDetailView({
         <div className="space-y-6">
           {STATUS_STEPS.map((step, index) => {
             const isCompleted = index <= currentStepIndex;
-            const isCurrent   = index === currentStepIndex;
+            const isCurrent = index === currentStepIndex;
             return (
               <div key={step.key} className="flex gap-4">
                 <div className="flex flex-col items-center">
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      isCompleted ? 'bg-slate-900' : 'bg-gray-200'
-                    }`}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center ${isCompleted ? 'bg-slate-900' : 'bg-gray-200'
+                      }`}
                   >
                     {isCompleted ? (
                       <Check className="w-5 h-5 text-white" />
@@ -163,7 +162,7 @@ function ActionButton({ onClick, disabled, icon, label, variant = 'default' }: A
       ? 'bg-green-600 text-white hover:bg-green-700'
       : 'bg-slate-900 text-white hover:bg-slate-800';
   return (
-    <button onClick={onClick} disabled={disabled} className={`${base} ${colors}`}>
+    <button onClick={onClick} disabled={disabled} className={`${base} ${colors} ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
       {icon} {label}
     </button>
   );

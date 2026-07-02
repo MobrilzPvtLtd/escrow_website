@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Shield, Lock, CreditCard, ChevronRight } from 'lucide-react';
+import { Shield, Lock, CreditCard, ChevronRight, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 
 interface FormData {
@@ -59,6 +59,8 @@ export default function AuthScreen() {
   const [accountType, setAccountType] = useState<'buyer' | 'seller'>('buyer');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const [formData, setFormData] = useState<FormData>(INITIAL_FORM);
 
@@ -560,7 +562,7 @@ export default function AuthScreen() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="group w-full py-4 bg-slate-900 text-white font-black rounded-2xl hover:bg-slate-800 active:scale-[0.98] transition-all shadow-xl shadow-slate-900/20 text-lg flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                className="cursor-pointer group w-full py-4 bg-slate-900 text-white font-black rounded-2xl hover:bg-slate-800 active:scale-[0.98] transition-all shadow-xl shadow-slate-900/20 text-lg flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {isLoading
                   ? 'Processing…'
