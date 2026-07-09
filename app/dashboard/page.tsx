@@ -18,6 +18,7 @@ import NotificationList from '@/components/dashboard/NotificationList';
 import { NewPurchaseModal } from '@/components/modals/NewPurchaseModal';
 import { TransactionDetailView } from '@/components/transactions/TransactionDetailView';
 import { ProfileView } from '@/components/profile/ProfileView';
+import { SellerWalletView } from '@/components/profile/SellerWalletView';
 
 import type { View, ActiveTab, Transaction, Seller } from '@/types';
 
@@ -93,6 +94,14 @@ export default function DashboardPage() {
             profile={dashboard.profile}
             onBack={() => setCurrentView('dashboard')}
             onRefresh={dashboard.refresh}
+            onWallet={() => setCurrentView('wallet')}
+          />
+        )}
+
+        {/* Wallet View */}
+        {currentView === 'wallet' && (
+          <SellerWalletView
+            onBack={() => setCurrentView('profile')}
           />
         )}
 

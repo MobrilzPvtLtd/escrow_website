@@ -324,3 +324,50 @@ export async function updateProfile(
   const data = await res.json();
   return data;
 }
+
+import type { SellerWallet, WithdrawRequest } from '@/types';
+
+export async function fetchSellerWallet(): Promise<{ wallet: SellerWallet, withdrawRequests: WithdrawRequest[] }> {
+  // Fetch wallet details
+  const walletRes = await apiFetch(`${BASE_URL}/transactions/wallet`);
+  if (!walletRes.ok) {
+    throw new Error(`HTTP ${walletRes.status}: Failed to fetch wallet`);
+  }
+  const walletData = await walletRes.json();
+  if (!walletData.success || !walletData.wallet) {
+    throw new Error('Failed to fetch wallet data');
+  }
+
+  // Fetch wallet history (for withdraw requests)
+  const historyRes = await apiFetch(`${BASE_URL}/transactions/wallet-history`);
+  let withdrawRequests: WithdrawRequest[] = [];
+  if (historyRes.ok) {
+    const historyData = await historyRes.json();
+    if (historyData.success) {
+      withdrawRequests = historyData.withdrawRequests || [];
+    }
+  }
+
+  return {
+    wallet: walletData.wallet,
+    withdrawRequests,
+  };
+}
+
+export async function requestWithdrawal(
+  amount: number,
+  note?: string
+): Promise<{ success: boolean; message: string }> {
+  const res = await apiFetch(`${BASE_URL}/transactions/wallet/withdraw`, {
+    method: 'POST',
+    body: JSON.stringify({ amount, note }),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data?.message || 'Failed to submit withdrawal request');
+  }
+
+  return data;
+}

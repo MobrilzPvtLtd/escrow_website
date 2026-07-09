@@ -20,6 +20,7 @@ import {
   BadgeCheck,
   Building2,
   Star,
+  Wallet,
 } from 'lucide-react';
 
 import { EditProfileModal } from '@/components/modals/EditProfileModal';
@@ -37,6 +38,7 @@ interface ProfileViewProps {
   trustScore: number;
   onBack: () => void;
   onRefresh?: () => void;
+  onWallet?: () => void;
   profile: SellerProfile | BuyerProfile | null;
 }
 
@@ -46,6 +48,7 @@ export function ProfileView({
   trustScore,
   onBack,
   onRefresh,
+  onWallet,
   profile,
 }: ProfileViewProps) {
   const [isEditing, setIsEditing] = useState(false);
@@ -259,6 +262,26 @@ export function ProfileView({
             />
           </div>
         </div>
+
+        {/* Wallet – sellers only */}
+        {isSeller && (
+          <button
+            onClick={onWallet}
+            className="cursor-pointer bg-white rounded-[32px] p-8 border border-slate-100 shadow-xl shadow-slate-200/20 text-left hover:shadow-2xl hover:border-emerald-200 transition-all duration-300 group"
+          >
+            <SectionTitle
+              icon={<Wallet className="w-5 h-5 text-emerald-600" />}
+              title="My Wallet"
+            />
+            <p className="text-slate-500 text-sm font-semibold leading-relaxed">
+              View your earnings, wallet balance, total withdrawn amount, and manage withdrawal requests.
+            </p>
+            <div className="flex items-center gap-2 mt-5 text-emerald-600 font-black text-sm group-hover:gap-3 transition-all">
+              Open Wallet
+              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </button>
+        )}
 
         {/* Security */}
         <div className="bg-white rounded-[32px] p-8 border border-slate-100 shadow-xl shadow-slate-200/20">

@@ -1,5 +1,5 @@
 export type UserType = 'buyer' | 'seller';
-export type View = 'dashboard' | 'profile' | 'transaction-detail' | 'notifications';
+export type View = 'dashboard' | 'profile' | 'transaction-detail' | 'notifications' | 'wallet';
 export type ActiveTab = 'sellers' | 'transactions';
 
 export interface TransactionForm {
@@ -88,4 +88,32 @@ export interface ProfileData {
   email: string;
   phone: string;
   address: string;
+}
+
+export type WithdrawStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+export interface WithdrawRequest {
+  id: string | number;
+  amount: number;
+  status: WithdrawStatus;
+  bankName: string;
+  accountNumber: string;
+  ifscCode: string;
+  branchName: string;
+  note?: string;
+  adminNote?: string | null;
+  createdAt: string;
+}
+
+export interface SellerWallet {
+  id: number;
+  userId: number;
+  remainingBalance: number;
+  totalCredited: number;
+  totalWithdrawn: number;
+}
+
+export interface WalletHistoryResponse {
+  success: boolean;
+  withdrawRequests: WithdrawRequest[];
 }
