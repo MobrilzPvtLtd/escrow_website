@@ -104,12 +104,12 @@ export default function AuthScreen() {
     if (typeof window === 'undefined') return;
 
     // Access Token
-    if (data.token) {
+    if (data.token && data.token !== 'undefined' && data.token !== 'null') {
       localStorage.setItem('token', data.token);
     }
 
     // Refresh Token
-    if (refreshToken) {
+    if (refreshToken && refreshToken !== 'undefined' && refreshToken !== 'null') {
       localStorage.setItem('refreshToken', refreshToken);
     }
 
@@ -183,7 +183,7 @@ export default function AuthScreen() {
 
         data = await res.json();
 
-        if (!res.ok) {
+        if (!res.ok || data.success === false) {
           throw new Error(data.message || 'Registration failed');
         }
 
@@ -219,7 +219,7 @@ export default function AuthScreen() {
 
         const data = await res.json();
 
-        if (!res.ok) {
+        if (!res.ok || data.success === false) {
           throw new Error(data.message || 'Login failed');
         }
 
