@@ -56,8 +56,8 @@ async function refreshAccessToken(): Promise<string | null> {
       return null;
     }
 
-    const newAccessToken = res.headers.get('authorization');
-    const newRefreshToken = res.headers.get('refreshtoken');
+    const newAccessToken = res.headers.get('authorization') || data.token || data.accessToken;
+    const newRefreshToken = res.headers.get('refreshtoken') || res.headers.get('refreshToken') || data.refreshToken;
 
     console.log('New Access Token:', newAccessToken);
     console.log('New Refresh Token:', newRefreshToken);

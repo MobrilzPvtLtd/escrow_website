@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Shield, Lock, CreditCard, ChevronRight, Eye, EyeOff } from 'lucide-react';
+import { Shield, Lock, CreditCard, ChevronRight, Eye, EyeOff, Check } from 'lucide-react';
 import Link from 'next/link';
 
 interface FormData {
@@ -63,6 +63,8 @@ export default function AuthScreen() {
   const [showPassword, setShowPassword] = useState(false);
 
   const [formData, setFormData] = useState<FormData>(INITIAL_FORM);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   // Redirect to dashboard if already logged in
   useEffect(() => {
@@ -104,13 +106,15 @@ export default function AuthScreen() {
     if (typeof window === 'undefined') return;
 
     // Access Token
-    if (data.token && data.token !== 'undefined' && data.token !== 'null') {
-      localStorage.setItem('token', data.token);
+    const finalToken = data.token || (data as any).accessToken;
+    if (finalToken && finalToken !== 'undefined' && finalToken !== 'null') {
+      localStorage.setItem('token', finalToken);
     }
 
     // Refresh Token
-    if (refreshToken && refreshToken !== 'undefined' && refreshToken !== 'null') {
-      localStorage.setItem('refreshToken', refreshToken);
+    const finalRefreshToken = refreshToken || data.refreshToken || (data as any).refresh_token;
+    if (finalRefreshToken && finalRefreshToken !== 'undefined' && finalRefreshToken !== 'null') {
+      localStorage.setItem('refreshToken', finalRefreshToken);
     }
 
     localStorage.setItem(
@@ -187,13 +191,23 @@ export default function AuthScreen() {
           throw new Error(data.message || 'Registration failed');
         }
 
-        const token = res.headers.get('authorization');
-        const refreshToken = res.headers.get('refreshtoken');
+        if (accountType === 'seller') {
+          setSuccessMessage(
+            data.message ||
+              'Registration successful. Your account details have been submitted. Admin will review and grant access.'
+          );
+          setShowSuccessModal(true);
+          return;
+        }
+
+        const token = res.headers.get('authorization') || data.token || data.accessToken;
+        const refreshToken = res.headers.get('refreshtoken') || res.headers.get('refreshToken') || data.refreshToken;
 
         persistSession(
           {
             ...data,
             token,
+            refreshToken,
           },
           formData.email,
           formData.fullName,
@@ -223,13 +237,14 @@ export default function AuthScreen() {
           throw new Error(data.message || 'Login failed');
         }
 
-        const token = res.headers.get('authorization');
-        const refreshToken = res.headers.get('refreshtoken');
+        const token = res.headers.get('authorization') || data.token || data.accessToken;
+        const refreshToken = res.headers.get('refreshtoken') || res.headers.get('refreshToken') || data.refreshToken;
 
         persistSession(
           {
             ...data,
             token,
+            refreshToken,
           },
           formData.email,
           formData.fullName,
@@ -607,6 +622,40 @@ export default function AuthScreen() {
           </p>
         </div>
       </div>
+
+      {/* SUCCESS MODAL FOR SELLER REGISTRATION */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md transition-all duration-300">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full border border-slate-100 shadow-2xl flex flex-col items-center text-center transform scale-100 transition-all duration-300">
+            {/* Animated Ring with Success Check Icon */}
+            <div className="relative mb-6">
+              <div className="absolute inset-0 rounded-full bg-emerald-100 animate-ping opacity-75" />
+              <div className="relative w-16 h-16 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                <Check className="w-8 h-8 text-white stroke-[3px]" />
+              </div>
+            </div>
+
+            <h3 className="text-2xl font-black text-slate-900 mb-3 tracking-tight">
+              Registration Successful
+            </h3>
+            
+            <p className="text-slate-600 font-medium leading-relaxed mb-8">
+              {successMessage}
+            </p>
+
+            <button
+              onClick={() => {
+                setShowSuccessModal(false);
+                setIsLogin(true); // Switch to login tab
+                setFormData(INITIAL_FORM); // Reset registration form
+              }}
+              className="cursor-pointer w-full py-4 bg-slate-900 text-white font-black rounded-2xl hover:bg-slate-800 active:scale-[0.98] transition-all shadow-xl shadow-slate-900/20 text-md flex items-center justify-center gap-2"
+            >
+              Got it, thank you
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
