@@ -207,7 +207,10 @@ export async function fetchSellerProfile(): Promise<SellerProfile> {
     throw new Error('Failed to fetch seller profile');
   }
 
-  return data as SellerProfile;
+  return {
+    succes: data.success,
+    profile: data.data?.profile || data.profile,
+  } as SellerProfile;
 }
 
 export async function fetchBuyerProfile(): Promise<BuyerProfile> {
@@ -227,7 +230,10 @@ export async function fetchBuyerProfile(): Promise<BuyerProfile> {
     throw new Error('Failed to fetch buyer profile');
   }
 
-  return data as BuyerProfile;
+  return {
+    succes: data.success,
+    profile: data.data?.profile || data.profile,
+  } as BuyerProfile;
 }
 
 export async function fetchNotifications(): Promise<Notification[]> {
@@ -334,22 +340,34 @@ export async function fetchSellerWallet(): Promise<{ wallet: SellerWallet, withd
     throw new Error(`HTTP ${walletRes.status}: Failed to fetch wallet`);
   }
   const walletData = await walletRes.json();
-  if (!walletData.success || !walletData.wallet) {
+
+  const success = walletData.success;
+  const wallet = walletData.wallet || walletData.data?.wallet;
+
+  if (!success || !wallet) {
     throw new Error('Failed to fetch wallet data');
   }
 
-  // Fetch wallet history (for withdraw requests)
-  const historyRes = await apiFetch(`${BASE_URL}/transactions/wallet-history`);
-  let withdrawRequests: WithdrawRequest[] = [];
-  if (historyRes.ok) {
-    const historyData = await historyRes.json();
-    if (historyData.success) {
-      withdrawRequests = historyData.withdrawRequests || [];
+  // Withdraw requests can be in the same response
+  let withdrawRequests: WithdrawRequest[] = walletData.withdrawRequests || walletData.data?.withdrawRequests || [];
+
+  // Fallback to fetch wallet history (for withdraw requests) if not returned in primary response
+  if (!walletData.withdrawRequests && !walletData.data?.withdrawRequests) {
+    try {
+      const historyRes = await apiFetch(`${BASE_URL}/transactions/wallet-history`);
+      if (historyRes.ok) {
+        const historyData = await historyRes.json();
+        if (historyData.success) {
+          withdrawRequests = historyData.withdrawRequests || historyData.data?.withdrawRequests || [];
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to fetch wallet history:', err);
     }
   }
 
   return {
-    wallet: walletData.wallet,
+    wallet,
     withdrawRequests,
   };
 }

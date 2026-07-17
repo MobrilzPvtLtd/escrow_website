@@ -87,27 +87,27 @@ export function useDashboard() {
 
           stats:
             stats.status === 'fulfilled'
-              ? stats.value
+              ? (stats.value || prev.stats)
               : prev.stats,
 
           sellers:
             sellers.status === 'fulfilled'
-              ? sellers.value
+              ? (sellers.value || [])
               : prev.sellers,
 
           transactions:
             transactions.status === 'fulfilled'
-              ? transactions.value
+              ? (transactions.value || [])
               : prev.transactions,
 
           notifications:
             notifications.status === 'fulfilled'
-              ? notifications.value
+              ? (notifications.value || [])
               : prev.notifications,
 
           profile:
             profile.status === 'fulfilled'
-              ? profile.value
+              ? (profile.value || prev.profile)
               : prev.profile,
         }));
         

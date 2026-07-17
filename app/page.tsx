@@ -106,30 +106,32 @@ export default function AuthScreen() {
     if (typeof window === 'undefined') return;
 
     // Access Token
-    const finalToken = data.token || (data as any).accessToken;
+    const finalToken = data.token || (data as any).accessToken || (data as any).data?.token || (data as any).data?.accessToken;
     if (finalToken && finalToken !== 'undefined' && finalToken !== 'null') {
       localStorage.setItem('token', finalToken);
     }
 
     // Refresh Token
-    const finalRefreshToken = refreshToken || data.refreshToken || (data as any).refresh_token;
+    const finalRefreshToken = refreshToken || data.refreshToken || (data as any).refresh_token || (data as any).data?.refreshToken || (data as any).data?.refresh_token;
     if (finalRefreshToken && finalRefreshToken !== 'undefined' && finalRefreshToken !== 'null') {
       localStorage.setItem('refreshToken', finalRefreshToken);
     }
 
+    const user = data.user || (data as any).data?.user;
+
     localStorage.setItem(
       'userType',
-      data.user?.role || fallbackRole
+      user?.role || fallbackRole
     );
 
     localStorage.setItem(
       'userEmail',
-      data.user?.email || fallbackEmail
+      user?.email || fallbackEmail
     );
 
     localStorage.setItem(
       'userName',
-      data.user?.name || fallbackName
+      user?.name || fallbackName
     );
   };
 

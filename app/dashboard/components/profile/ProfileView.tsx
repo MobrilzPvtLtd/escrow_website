@@ -3,7 +3,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import {
   ArrowLeft,
@@ -56,8 +56,7 @@ export function ProfileView({
 
   const isSeller =
     userType === 'seller' &&
-    profile &&
-    profile.profile.sellerProfile;
+    !!profile?.profile?.sellerProfile;
 
   const [profileData, setProfileData] = useState<ProfileData>({
     name: profile?.profile?.name || '',
@@ -65,6 +64,17 @@ export function ProfileView({
     phone: '',
     address: '',
   });
+
+  useEffect(() => {
+    if (profile?.profile) {
+      setProfileData({
+        name: profile.profile.name || '',
+        email: profile.profile.email || '',
+        phone: '',
+        address: '',
+      });
+    }
+  }, [profile]);
 
   console.log('ProfileView - profile prop:', profile);
   console.log('ProfileView - profileData:', profileData);

@@ -59,7 +59,7 @@ export default function DashboardPage() {
     );
   };
 
-  const totalReceived = dashboard.transactions.reduce(
+  const totalReceived = (dashboard.transactions || []).reduce(
     (sum, tx) => (tx.status === 'RELEASED' ? sum + tx.amount : sum),
     0
   );
@@ -151,7 +151,7 @@ export default function DashboardPage() {
               {/* Buyer - Sellers */}
               {dashboard.userType === 'buyer' &&
                 activeTab === 'sellers' &&
-                dashboard.sellers.map((seller) => (
+                (dashboard.sellers || []).map((seller) => (
                   <SellerCard
                     key={seller.id}
                     seller={seller}
@@ -161,7 +161,7 @@ export default function DashboardPage() {
               {/* Buyer - Transactions */}
               {dashboard.userType === 'buyer' &&
                 activeTab === 'transactions' &&
-                dashboard.transactions.map((tx) => (
+                (dashboard.transactions || []).map((tx) => (
                   <TransactionCard
                     key={tx.id}
                     transaction={tx}
@@ -171,7 +171,7 @@ export default function DashboardPage() {
 
               {/* Seller Orders */}
               {dashboard.userType === 'seller' &&
-                dashboard.transactions.map((order) => (
+                (dashboard.transactions || []).map((order) => (
                   <SellerOrderCard
                     key={order.id}
                     order={order}
@@ -193,7 +193,7 @@ export default function DashboardPage() {
       {/* New Purchase Modal */}
       {showNewPurchaseModal && (
         <NewPurchaseModal
-          sellers={dashboard.sellers}
+          sellers={dashboard.sellers || []}
           onClose={() => setShowNewPurchaseModal(false)}
           onCreated={dashboard.refresh}
         />
