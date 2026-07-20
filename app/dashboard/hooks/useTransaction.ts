@@ -1,14 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { createTransaction, updateTransactionStatus, type CreateTransactionPayload } from '@/lib/api';
+import {
+  createTransaction,
+  updateTransactionStatus,
+  checkTransactionStatus,
+  type CreateTransactionPayload,
+  type CheckStatusPayload,
+} from '@/lib/api';
 
 export function useTransaction() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError]         = useState<string | null>(null);
-
-  const token = () =>
-    typeof window !== 'undefined' ? (localStorage.getItem('token') ?? '') : '';
 
   const create = async (payload: CreateTransactionPayload) => {
     setIsLoading(true);
@@ -18,6 +21,21 @@ export function useTransaction() {
       return result;
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to create transaction';
+      setError(msg);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const checkStatus = async (payload: CheckStatusPayload) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const result = await checkTransactionStatus(payload);
+      return result;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to check transaction status';
       setError(msg);
       throw err;
     } finally {
@@ -39,5 +57,5 @@ export function useTransaction() {
     }
   };
 
-  return { isLoading, error, create, updateStatus };
+  return { isLoading, error, create, checkStatus, updateStatus };
 }

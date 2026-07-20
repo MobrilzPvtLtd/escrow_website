@@ -149,35 +149,72 @@ export default function DashboardPage() {
             {/* Dashboard Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
               {/* Buyer - Sellers */}
-              {dashboard.userType === 'buyer' &&
-                activeTab === 'sellers' &&
-                (dashboard.sellers || []).map((seller) => (
-                  <SellerCard
-                    key={seller.id}
-                    seller={seller}
-                  />
-                ))}
+              {dashboard.userType === 'buyer' && activeTab === 'sellers' && (
+                dashboard.isLoading ? (
+                  <div className="col-span-full py-12 text-center bg-white rounded-2xl border border-gray-100 p-8">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-slate-900 border-t-transparent mb-3" />
+                    <p className="text-sm font-medium text-gray-600">Loading verified sellers...</p>
+                  </div>
+                ) : (dashboard.sellers || []).length > 0 ? (
+                  (dashboard.sellers || []).map((seller) => (
+                    <SellerCard
+                      key={seller.id}
+                      seller={seller}
+                    />
+                  ))
+                ) : (
+                  <div className="col-span-full py-12 text-center bg-white rounded-2xl border border-gray-100 p-8">
+                    <p className="text-base font-semibold text-gray-800 mb-1">No Verified Sellers Found</p>
+                    <p className="text-sm text-gray-500">There are currently no verified sellers available on the platform.</p>
+                  </div>
+                )
+              )}
 
               {/* Buyer - Transactions */}
-              {dashboard.userType === 'buyer' &&
-                activeTab === 'transactions' &&
-                (dashboard.transactions || []).map((tx) => (
-                  <TransactionCard
-                    key={tx.id}
-                    transaction={tx}
-                    onClick={handleTransactionClick}
-                  />
-                ))}
+              {dashboard.userType === 'buyer' && activeTab === 'transactions' && (
+                dashboard.isLoading ? (
+                  <div className="col-span-full py-12 text-center bg-white rounded-2xl border border-gray-100 p-8">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-slate-900 border-t-transparent mb-3" />
+                    <p className="text-sm font-medium text-gray-600">Loading transactions...</p>
+                  </div>
+                ) : (dashboard.transactions || []).length > 0 ? (
+                  (dashboard.transactions || []).map((tx) => (
+                    <TransactionCard
+                      key={tx.id}
+                      transaction={tx}
+                      onClick={handleTransactionClick}
+                    />
+                  ))
+                ) : (
+                  <div className="col-span-full py-12 text-center bg-white rounded-2xl border border-gray-100 p-8">
+                    <p className="text-base font-semibold text-gray-800 mb-1">No Transactions Found</p>
+                    <p className="text-sm text-gray-500">You haven't initiated any escrow transactions yet.</p>
+                  </div>
+                )
+              )}
 
               {/* Seller Orders */}
-              {dashboard.userType === 'seller' &&
-                (dashboard.transactions || []).map((order) => (
-                  <SellerOrderCard
-                    key={order.id}
-                    order={order}
-                    onView={handleTransactionClick}
-                  />
-                ))}
+              {dashboard.userType === 'seller' && (
+                dashboard.isLoading ? (
+                  <div className="col-span-full py-12 text-center bg-white rounded-2xl border border-gray-100 p-8">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-slate-900 border-t-transparent mb-3" />
+                    <p className="text-sm font-medium text-gray-600">Loading incoming orders...</p>
+                  </div>
+                ) : (dashboard.transactions || []).length > 0 ? (
+                  (dashboard.transactions || []).map((order) => (
+                    <SellerOrderCard
+                      key={order.id}
+                      order={order}
+                      onView={handleTransactionClick}
+                    />
+                  ))
+                ) : (
+                  <div className="col-span-full py-12 text-center bg-white rounded-2xl border border-gray-100 p-8">
+                    <p className="text-base font-semibold text-gray-800 mb-1">No Orders Found</p>
+                    <p className="text-sm text-gray-500">No buyer has created an order for your business yet.</p>
+                  </div>
+                )
+              )}
             </div>
           </>
         )}
@@ -195,7 +232,10 @@ export default function DashboardPage() {
         <NewPurchaseModal
           sellers={dashboard.sellers || []}
           onClose={() => setShowNewPurchaseModal(false)}
-          onCreated={dashboard.refresh}
+          onCreated={() => {
+            dashboard.refresh();
+            setActiveTab('transactions');
+          }}
         />
       )}
     </div>

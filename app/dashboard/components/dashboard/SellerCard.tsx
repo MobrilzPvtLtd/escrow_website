@@ -6,6 +6,15 @@ interface SellerCardProps {
 }
 
 export function SellerCard({ seller }: SellerCardProps) {
+  const displayTitle =
+    seller.businessName ||
+    (seller as any).name ||
+    (seller as any).user?.name ||
+    `Seller #${seller.id ?? ''}`;
+
+  const link = seller.website || seller.domain || '';
+  const href = link ? (link.startsWith('http') ? link : `https://${link}`) : null;
+
   return (
     <div className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-shadow cursor-pointer group overflow-hidden">
       <div className="flex items-start gap-4 mb-4">
@@ -14,9 +23,18 @@ export function SellerCard({ seller }: SellerCardProps) {
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="font-bold text-gray-900 text-base mb-1 group-hover:text-slate-600 transition-colors truncate">
-            {seller.businessName}
+            {displayTitle}
           </h3>
-          <a href={`${seller.website ?? seller.domain}`} target="_blank" rel="noopener noreferrer" className="text-sm text-slate-600 mb-2 hover:text-blue-600 hover:underline truncate block">{seller.website ?? seller.domain}</a>
+          {href && (
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-slate-600 mb-2 hover:text-blue-600 hover:underline truncate block"
+            >
+              {link}
+            </a>
+          )}
         </div>
         {seller.rating != null && (
           <div className="flex items-center gap-1 bg-amber-50 px-2.5 py-1 rounded-lg flex-shrink-0">

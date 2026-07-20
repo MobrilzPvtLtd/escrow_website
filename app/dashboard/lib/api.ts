@@ -145,11 +145,17 @@ export async function fetchStats(): Promise<DashboardStats> {
     throw new Error(`HTTP ${res.status}: Failed to fetch stats`);
   }
 
-  if (!data.success) {
+  if (data.success === false) {
     throw new Error('Failed to fetch stats');
   }
 
-  return data.stats as DashboardStats;
+  const rawStats = data.stats || data.data?.stats || data.data || {};
+
+  return {
+    activeDeals: rawStats.activeDeals ?? rawStats.summary?.BLOCKED ?? rawStats.summary?.total ?? 0,
+    completedDeals: rawStats.completedDeals ?? rawStats.summary?.RELEASED ?? 0,
+    trustScore: rawStats.trustScore ?? 100,
+  } as DashboardStats;
 }
 
 export async function fetchSellers(): Promise<Seller[]> {
@@ -163,11 +169,32 @@ export async function fetchSellers(): Promise<Seller[]> {
     throw new Error(`HTTP ${res.status}: Failed to fetch sellers`);
   }
 
-  if (!data.success) {
-    throw new Error('Failed to fetch sellers');
+  // Handle various backend response formats (e.g. data.sellers, data.data.sellers, data.data, or direct array)
+  const rawList =
+    data.sellers ||
+    data.data?.sellers ||
+    (Array.isArray(data.data) ? data.data : null) ||
+    (Array.isArray(data) ? data : []);
+
+  if (!Array.isArray(rawList)) {
+    console.warn('Sellers payload is not an array:', data);
+    return [];
   }
 
-  return data.sellers as Seller[];
+  return rawList.map((item: any) => ({
+    id: item.id ?? item._id ?? item.userId ?? 0,
+    userId: item.userId ?? item.id,
+    businessName:
+      item.businessName ||
+      item.sellerProfile?.businessName ||
+      item.name ||
+      item.user?.name ||
+      `Seller #${item.id ?? item.userId ?? ''}`,
+    website: item.website || item.sellerProfile?.website || item.domain || '',
+    domain: item.domain || item.website || item.sellerProfile?.website || '',
+    description: item.description || item.sellerProfile?.description || '',
+    rating: item.rating ?? item.sellerProfile?.rating ?? null,
+  })) as Seller[];
 }
 
 export async function fetchTransactions(): Promise<Transaction[]> {
@@ -183,11 +210,37 @@ export async function fetchTransactions(): Promise<Transaction[]> {
     );
   }
 
-  if (!data.success) {
+  if (data.success === false) {
     throw new Error('Failed to fetch transactions');
   }
 
-  return data.transactions as Transaction[];
+  const rawList =
+    data.data?.transactions ||
+    data.transactions ||
+    (Array.isArray(data.data) ? data.data : null) ||
+    (Array.isArray(data) ? data : []);
+
+  if (!Array.isArray(rawList)) {
+    console.warn('Transactions payload is not an array:', data);
+    return [];
+  }
+
+  return rawList.map((item: any) => ({
+    id: item.id,
+    title: item.title || item.productName || `Transaction #${item.id}`,
+    productName: item.productName || item.title,
+    description: item.description || '',
+    amount: typeof item.amount === 'number' ? item.amount : parseFloat(item.amount || '0'),
+    status: item.status || 'BLOCKED',
+    paymentStatus: item.paymentStatus || 'PENDING',
+    buyerId: item.buyerId,
+    sellerId: item.sellerId,
+    seller: item.seller,
+    buyer: item.buyer,
+    createdAt: item.createdAt || new Date().toISOString(),
+    updatedAt: item.updatedAt,
+    timeline: item.timeline,
+  })) as Transaction[];
 }
 
 export async function fetchSellerProfile(): Promise<SellerProfile> {
@@ -267,26 +320,88 @@ export interface CreateTransactionPayload {
   description: string;
   amount: number;
   sellerId: number;
+  paymentType?: 'STRIPE' | 'PAYPAL';
+  currency?: string;
+}
+
+export interface CreateTransactionResult {
+  transaction: Transaction;
+  clientSecret?: string;
+  paymentIntentId?: string;
 }
 
 export async function createTransaction(
   payload: CreateTransactionPayload
-): Promise<Transaction> {
+): Promise<CreateTransactionResult> {
+  const body = {
+    title: payload.title,
+    description: payload.description,
+    amount: payload.amount,
+    sellerId: payload.sellerId,
+    paymentType: payload.paymentType || 'STRIPE',
+    currency: payload.currency || 'usd',
+  };
+
   const res = await apiFetch(
     `${BASE_URL}/transactions/create`,
     {
       method: 'POST',
-      body: JSON.stringify(payload),
+      body: JSON.stringify(body),
     }
   );
 
-  if (!res.ok) {
-    throw new Error('Failed to create transaction');
+  const data = await res.json();
+
+  if (!res.ok || data.success === false) {
+    throw new Error(data.message || 'Failed to create transaction');
   }
+
+  const txData = data.data?.transaction || data.transaction || data;
+  const clientSecret = data.data?.clientSecret || data.clientSecret;
+  const paymentIntentId = data.data?.paymentIntentId || data.paymentIntentId;
+
+  return {
+    transaction: txData as Transaction,
+    clientSecret,
+    paymentIntentId,
+  };
+}
+
+export interface CheckStatusPayload {
+  paymentType: 'STRIPE' | 'PAYPAL';
+  paymentIntentId: string;
+}
+
+export interface CheckStatusData {
+  paymentIntentId: string;
+  dealId?: number;
+  status: string;
+  stripeStatus?: string;
+  amount: number;
+  currency: string;
+}
+
+export interface CheckStatusResponse {
+  success: boolean;
+  message: string;
+  data?: CheckStatusData;
+}
+
+export async function checkTransactionStatus(
+  payload: CheckStatusPayload
+): Promise<CheckStatusResponse> {
+  const res = await apiFetch(`${BASE_URL}/transactions/status-check`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
 
   const data = await res.json();
 
-  return data.transaction as Transaction;
+  if (!res.ok) {
+    throw new Error(data.message || 'Failed to check payment status');
+  }
+
+  return data as CheckStatusResponse;
 }
 
 export async function updateTransactionStatus(
