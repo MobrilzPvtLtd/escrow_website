@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { PayPalButtons } from '@paypal/react-paypal-js';
-import { ShieldCheck, CreditCard, Lock, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, CreditCard, Lock, ArrowLeft, CheckCircle2, AlertCircle, ExternalLink, RefreshCw } from 'lucide-react';
 import { useTransaction } from '@/hooks/useTransaction';
 
 const stripePublishableKey =
@@ -18,6 +18,7 @@ interface CheckoutPaymentFormProps {
   paymentType: 'STRIPE' | 'PAYPAL';
   clientSecret?: string;
   paymentIntentId?: string;
+  paypalUrl?: string;
   onPaymentSuccess: (details: { gateway: 'stripe' | 'paypal'; statusData?: any }) => void;
   onBack: () => void;
   isSubmitting?: boolean;
@@ -142,6 +143,7 @@ export function CheckoutPaymentForm({
   paymentType,
   clientSecret,
   paymentIntentId,
+  paypalUrl,
   onPaymentSuccess,
   onBack,
   isSubmitting = false,
@@ -149,6 +151,7 @@ export function CheckoutPaymentForm({
   const { checkStatus } = useTransaction();
   const [statusChecking, setStatusChecking] = useState(false);
   const [manualError, setManualError] = useState<string | null>(null);
+  const [verificationResult, setVerificationResult] = useState<any | null>(null);
 
   const handleManualCheck = async () => {
     if (!paymentIntentId) return;
@@ -159,7 +162,13 @@ export function CheckoutPaymentForm({
         paymentType,
         paymentIntentId,
       });
-      onPaymentSuccess({ gateway: paymentType === 'STRIPE' ? 'stripe' : 'paypal', statusData: statusRes });
+      const resData = statusRes.data || statusRes;
+      setVerificationResult(resData);
+      
+      // Delay success callback slightly to let user see verification success animation
+      setTimeout(() => {
+        onPaymentSuccess({ gateway: paymentType === 'STRIPE' ? 'stripe' : 'paypal', statusData: statusRes });
+      }, 1500);
     } catch (err: any) {
       setManualError(err.message || 'Failed to check status');
     } finally {
@@ -227,48 +236,146 @@ export function CheckoutPaymentForm({
       )}
 
       {paymentType === 'PAYPAL' && (
-        <div>
-          <div className="text-xs font-bold text-slate-700 mb-3">Pay with PayPal</div>
-          {paymentIntentId && (
-            <div className="mb-3 p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600">
-              Transaction ID: <code className="font-mono bg-slate-200 px-1 py-0.5 rounded">{paymentIntentId}</code>
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <span className="p-2 bg-amber-50 rounded-lg">
+              <span className="font-extrabold text-amber-500 text-sm">Pay</span>
+              <span className="font-extrabold text-sky-500 text-sm">Pal</span>
+            </span>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900">Secure PayPal Checkout</h3>
+              <p className="text-xs text-slate-500">Pay securely using your PayPal account or credit card</p>
+            </div>
+          </div>
+
+          {paypalUrl ? (
+            <div className="space-y-4">
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+                <div className="flex items-center justify-between text-xs text-slate-600 border-b border-slate-100 pb-2">
+                  <span className="font-medium text-slate-500">Order Amount</span>
+                  <span className="font-bold text-slate-900">${amount.toFixed(2)} USD</span>
+                </div>
+                {paymentIntentId && (
+                  <div className="flex items-center justify-between text-xs text-slate-600 border-b border-slate-100 pb-2">
+                    <span className="font-medium text-slate-500">PayPal Order ID</span>
+                    <code className="font-mono bg-slate-200 px-1.5 py-0.5 rounded text-[10px]">{paymentIntentId}</code>
+                  </div>
+                )}
+                <div className="text-xs text-slate-600 leading-relaxed font-normal">
+                  Click the button below to open PayPal's secure checkout page in a new window. After completing the payment, return here to verify the status.
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-3">
+                <a
+                  href={paypalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3.5 bg-amber-400 hover:bg-amber-500 text-slate-900 font-extrabold rounded-xl shadow-md transition-all text-sm flex items-center justify-center gap-2 cursor-pointer border border-amber-300 text-center"
+                >
+                  Pay with <span className="font-extrabold text-blue-800">Pay</span><span className="font-extrabold text-sky-600">Pal</span>
+                  <ExternalLink className="w-4 h-4 ml-0.5" />
+                </a>
+
+                {verificationResult ? (
+                  <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-700 font-semibold flex items-start gap-2 animate-fadeIn">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-bold text-emerald-800">PayPal Payment Verified!</p>
+                      <div className="text-[11px] font-normal text-emerald-600 mt-1 space-y-0.5">
+                        <p>Status: <span className="font-semibold text-emerald-700">{verificationResult.status}</span></p>
+                        {verificationResult.dealId && (
+                          <p>Deal ID: <span className="font-semibold text-emerald-700">{verificationResult.dealId}</span></p>
+                        )}
+                        {verificationResult.amount && (
+                          <p>Verified Amount: <span className="font-semibold text-emerald-700">${verificationResult.amount} USD</span></p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {manualError && (
+                      <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600 font-medium flex items-start gap-2">
+                        <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                        <span>{manualError}</span>
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={handleManualCheck}
+                      disabled={statusChecking || !paymentIntentId}
+                      className="w-full py-3 bg-slate-900 text-white font-bold rounded-xl text-xs hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                    >
+                      {statusChecking ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                          Verifying PayPal Payment...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-pulse" />
+                          Verify Payment Status
+                        </>
+                      )}
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {paymentIntentId && (
+                <div className="mb-3 p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600 flex justify-between items-center">
+                  <span>Order ID:</span>
+                  <code className="font-mono bg-slate-200 px-1 py-0.5 rounded">{paymentIntentId}</code>
+                </div>
+              )}
+              <PayPalButtons
+                style={{ layout: 'vertical', color: 'gold', shape: 'rect', label: 'paypal' }}
+                disabled={isSubmitting}
+                createOrder={async () => paymentIntentId || `PAYPAL-DEMO-${Date.now()}`}
+                onApprove={async () => {
+                  if (paymentIntentId) {
+                    try {
+                      const statusRes = await checkStatus({
+                        paymentType: 'PAYPAL',
+                        paymentIntentId,
+                      });
+                      setVerificationResult(statusRes.data || statusRes);
+                      setTimeout(() => {
+                        onPaymentSuccess({ gateway: 'paypal', statusData: statusRes });
+                      }, 1200);
+                    } catch {
+                      onPaymentSuccess({ gateway: 'paypal' });
+                    }
+                  } else {
+                    onPaymentSuccess({ gateway: 'paypal' });
+                  }
+                }}
+                onError={async () => {
+                  if (paymentIntentId) {
+                    try {
+                      const statusRes = await checkStatus({
+                        paymentType: 'PAYPAL',
+                        paymentIntentId,
+                      });
+                      setVerificationResult(statusRes.data || statusRes);
+                      setTimeout(() => {
+                        onPaymentSuccess({ gateway: 'paypal', statusData: statusRes });
+                      }, 1200);
+                    } catch {
+                      onPaymentSuccess({ gateway: 'paypal' });
+                    }
+                  } else {
+                    onPaymentSuccess({ gateway: 'paypal' });
+                  }
+                }}
+              />
             </div>
           )}
-          <PayPalButtons
-            style={{ layout: 'vertical', color: 'gold', shape: 'rect', label: 'paypal' }}
-            disabled={isSubmitting}
-            createOrder={async () => paymentIntentId || `PAYPAL-DEMO-${Date.now()}`}
-            onApprove={async () => {
-              if (paymentIntentId) {
-                try {
-                  const statusRes = await checkStatus({
-                    paymentType: 'PAYPAL',
-                    paymentIntentId,
-                  });
-                  onPaymentSuccess({ gateway: 'paypal', statusData: statusRes });
-                } catch {
-                  onPaymentSuccess({ gateway: 'paypal' });
-                }
-              } else {
-                onPaymentSuccess({ gateway: 'paypal' });
-              }
-            }}
-            onError={async () => {
-              if (paymentIntentId) {
-                try {
-                  const statusRes = await checkStatus({
-                    paymentType: 'PAYPAL',
-                    paymentIntentId,
-                  });
-                  onPaymentSuccess({ gateway: 'paypal', statusData: statusRes });
-                } catch {
-                  onPaymentSuccess({ gateway: 'paypal' });
-                }
-              } else {
-                onPaymentSuccess({ gateway: 'paypal' });
-              }
-            }}
-          />
         </div>
       )}
     </div>

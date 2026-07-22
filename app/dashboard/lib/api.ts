@@ -328,6 +328,8 @@ export interface CreateTransactionResult {
   transaction: Transaction;
   clientSecret?: string;
   paymentIntentId?: string;
+  paypalUrl?: string;
+  orderId?: string;
 }
 
 export async function createTransaction(
@@ -358,12 +360,16 @@ export async function createTransaction(
 
   const txData = data.data?.transaction || data.transaction || data;
   const clientSecret = data.data?.clientSecret || data.clientSecret;
-  const paymentIntentId = data.data?.paymentIntentId || data.paymentIntentId;
+  const paypalUrl = data.data?.paypalUrl || data.paypalUrl;
+  const orderId = data.data?.orderId || data.orderId;
+  const paymentIntentId = data.data?.paymentIntentId || data.paymentIntentId || orderId;
 
   return {
     transaction: txData as Transaction,
     clientSecret,
     paymentIntentId,
+    paypalUrl,
+    orderId,
   };
 }
 
@@ -373,12 +379,13 @@ export interface CheckStatusPayload {
 }
 
 export interface CheckStatusData {
-  paymentIntentId: string;
+  paymentIntentId?: string;
+  orderId?: string;
   dealId?: number;
   status: string;
   stripeStatus?: string;
   amount: number;
-  currency: string;
+  currency?: string;
 }
 
 export interface CheckStatusResponse {

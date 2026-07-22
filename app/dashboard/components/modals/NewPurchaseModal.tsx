@@ -28,6 +28,7 @@ export function NewPurchaseModal({ sellers, onClose, onCreated }: NewPurchaseMod
   const [createdData, setCreatedData] = useState<{
     clientSecret?: string;
     paymentIntentId?: string;
+    paypalUrl?: string;
   } | null>(null);
 
   const { isLoading, create } = useTransaction();
@@ -70,6 +71,7 @@ export function NewPurchaseModal({ sellers, onClose, onCreated }: NewPurchaseMod
       setCreatedData({
         clientSecret: result.clientSecret,
         paymentIntentId: result.paymentIntentId,
+        paypalUrl: result.paypalUrl,
       });
 
       setStep('payment');
@@ -226,6 +228,7 @@ export function NewPurchaseModal({ sellers, onClose, onCreated }: NewPurchaseMod
               paymentType={paymentType}
               clientSecret={createdData?.clientSecret}
               paymentIntentId={createdData?.paymentIntentId}
+              paypalUrl={createdData?.paypalUrl}
               onPaymentSuccess={handlePaymentSuccess}
               onBack={() => setStep('details')}
               isSubmitting={isLoading}
