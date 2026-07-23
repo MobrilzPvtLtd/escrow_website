@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 
 import { EditProfileModal } from '@/components/modals/EditProfileModal';
+import { DeleteAccountModal } from '@/components/modals/DeleteAccountModal';
 
 import type {
   UserType,
@@ -45,6 +46,7 @@ export function ProfileView({
 }: ProfileViewProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const isSeller =
     userType === 'seller' &&
@@ -242,7 +244,10 @@ export function ProfileView({
 
           <div className="space-y-4">
 
-            <button className="cursor-pointer w-full flex items-center p-4 rounded-2xl hover:bg-red-50 transition-colors group border border-transparent hover:border-red-100 mt-4 gap-4">
+            <button
+              onClick={() => setShowDeleteModal(true)}
+              className="cursor-pointer w-full flex items-center p-4 rounded-2xl hover:bg-red-50 transition-colors group border border-transparent hover:border-red-100 mt-4 gap-4"
+            >
               <div className="w-10 h-10 rounded-xl bg-red-100/50 flex items-center justify-center group-hover:bg-red-100 transition-colors">
                 <LogOut className="w-5 h-5 text-red-400 group-hover:text-red-600 transition-colors" />
               </div>
@@ -273,6 +278,13 @@ export function ProfileView({
             onRefresh?.();
             setShowEditModal(false);
           }}
+        />
+      )}
+
+      {/* Delete Account Modal */}
+      {showDeleteModal && (
+        <DeleteAccountModal
+          onClose={() => setShowDeleteModal(false)}
         />
       )}
     </div>

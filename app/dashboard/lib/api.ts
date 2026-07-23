@@ -453,6 +453,24 @@ export async function updateProfile(
   return data;
 }
 
+export async function deleteAccount(): Promise<{
+  success: boolean;
+  message: string;
+  data?: { id: number };
+}> {
+  const res = await apiFetch(`${BASE_URL}/delete-account`, {
+    method: 'DELETE',
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || 'Failed to delete account');
+  }
+
+  return data;
+}
+
 import type { SellerWallet, WithdrawRequest } from '@/types';
 
 export async function fetchSellerWallet(): Promise<{ wallet: SellerWallet, withdrawRequests: WithdrawRequest[] }> {
