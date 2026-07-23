@@ -1,4 +1,4 @@
-import { Star, Wallet } from 'lucide-react';
+import { Wallet } from 'lucide-react';
 import type { DashboardStats, UserType } from '@/types';
 
 interface DashboardHeroProps {
@@ -19,12 +19,6 @@ export function DashboardHero({ userType, userName, stats, totalReceived = 0 }: 
 
           {/* Left: Greeting */}
           <div className="max-w-xl text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 mb-6 backdrop-blur-md">
-              <Star className="w-3.5 h-3.5 text-blue-400 fill-blue-400" />
-              <span className="text-[10px] font-black text-blue-100 uppercase tracking-[0.2em]">
-                Verified Secure Portal
-              </span>
-            </div>
             <h1 className="text-5xl lg:text-6xl font-black text-white tracking-tight mb-4 leading-tight">
               {userType === 'buyer' ? 'Buyer' : 'Seller'}{' '}
               <span className="text-blue-400">Dashboard</span>
@@ -54,15 +48,6 @@ export function DashboardHero({ userType, userName, stats, totalReceived = 0 }: 
                 <p className="text-blue-400/60 text-[10px] font-black uppercase tracking-widest mt-4">
                   Swiss Standard Verified
                 </p>
-              </div>
-            )}
-
-            {userType === 'buyer' && (
-              <div className="bg-green-500/10 backdrop-blur-xl border border-green-500/30 p-8 rounded-[32px] hover:bg-green-500/20 transition-all group">
-                <p className="text-[10px] font-black text-green-300 uppercase tracking-widest mb-4 group-hover:text-green-200 transition-colors">
-                  Trust Score
-                </p>
-                <p className="text-4xl font-black text-white">{stats.trustScore}%</p>
               </div>
             )}
           </div>

@@ -1,6 +1,3 @@
-
-
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -10,10 +7,7 @@ import {
   User,
   Edit,
   Mail,
-  Phone,
-  MapPin,
   Lock,
-  Bell,
   LogOut,
   ChevronRight,
   Globe,
@@ -44,8 +38,6 @@ interface ProfileViewProps {
 
 export function ProfileView({
   userType,
-  userEmail,
-  trustScore,
   onBack,
   onRefresh,
   onWallet,
@@ -195,58 +187,6 @@ export function ProfileView({
                 </div>
               </div>
             )}
-
-            {/* Stats */}
-            <div className="flex flex-wrap justify-center md:justify-start gap-8 mb-8">
-              <Stat label="Member ID" value={`${profile?.profile?.id ?? ""}`} />
-
-              <Stat
-                label="Trust Score"
-                value={`${trustScore}%`}
-              />
-
-              <Stat
-                label="Role"
-                value={profile?.profile?.role ?? ""}
-              />
-
-              {sellerProfile && (
-                <Stat
-                  label="Seller Rating"
-                  value={`${sellerProfile.rating}`}
-                  suffix="/ 5.0"
-                />
-              )}
-            </div>
-
-            {/* Actions */}
-            {/* <div className="flex flex-col sm:flex-row gap-3">
-              {isEditing ? (
-                <>
-                  <button
-                    onClick={() => setIsEditing(false)}
-                    className="px-8 py-4 bg-slate-900 text-white rounded-2xl text-sm font-bold hover:bg-slate-800 transition-all shadow-lg"
-                  >
-                    Save Changes
-                  </button>
-
-                  <button
-                    onClick={() => setIsEditing(false)}
-                    className="px-8 py-4 bg-slate-100 text-slate-600 rounded-2xl text-sm font-bold hover:bg-slate-200 transition-all"
-                  >
-                    Cancel
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="px-8 py-4 bg-slate-900 text-white rounded-2xl text-sm font-bold hover:bg-slate-800 transition-all shadow-lg flex items-center gap-2"
-                >
-                  <Edit className="w-4 h-4" />
-                  Edit Profile
-                </button>
-              )}
-            </div> */}
           </div>
         </div>
       </div>
@@ -301,14 +241,6 @@ export function ProfileView({
           />
 
           <div className="space-y-4">
-        
-            {/* <SecurityRow
-              icon={
-                <Bell className="w-5 h-5 text-slate-400 group-hover:text-slate-900 transition-colors" />
-              }
-              label="Notifications"
-              sub="Manage transaction alerts"
-            /> */}
 
             <button className="cursor-pointer w-full flex items-center p-4 rounded-2xl hover:bg-red-50 transition-colors group border border-transparent hover:border-red-100 mt-4 gap-4">
               <div className="w-10 h-10 rounded-xl bg-red-100/50 flex items-center justify-center group-hover:bg-red-100 transition-colors">
